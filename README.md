@@ -34,3 +34,19 @@ GEMINI_API_KEY=your_api_key_here
 ```
 
 La interpretacion de objetivos usa un vocabulario controlado construido desde `data/roles.json` y `data/skills.json`. El LLM extrae desde el texto del usuario el rol objetivo, habilidades iniciales y restricciones. Debe devolver JSON, y `src/llm/interpreter.py` valida que los IDs existan antes de crear un `GoalSpec`.
+
+## CLI preliminar
+
+Ejemplo sin coste usando mock:
+
+```bash
+python -m src.main --provider mock --goal "Quiero ser ingeniero de machine learning en 18 meses, se Python basico y puedo dedicar 10 horas semanales." --courses "course_python_intermediate,course_statistics_basic,course_machine_learning_basic,course_deep_learning_basic,course_mlops_basic"
+```
+
+Ejemplo con Gemini real, usando `GEMINI_API_KEY` en `.env`:
+
+```bash
+python -m src.main --provider gemini --goal "Quiero ser analista de datos en 12 semanas, se Python basico y SQL basico, y puedo dedicar 8 horas semanales." --courses "course_python_intermediate,course_statistics_basic,course_data_analysis_basic"
+```
+
+La CLI imprime el texto del usuario, el prompt exacto enviado al LLM, la respuesta cruda, el `GoalSpec` validado y el resultado del validador formal. Todavia no genera cursos automaticamente porque los planificadores vienen en la siguiente fase.
