@@ -1,0 +1,15 @@
+[
+  {
+    "id": "inst_001",
+    "profile_id": "profile_beginner",
+    "goal_text": "Quiero ser ingeniero de machine learning en 18 meses, se Python basico y puedo dedicar 10 horas semanales.",
+    "expected_role_id": "role_ml_engineer"
+  },
+  {
+    "id": "inst_002",
+    "profile_id": "profile_data_foundation",
+    "goal_text": "Quiero trabajar como analista de datos lo mas rapido posible y puedo estudiar 8 horas semanales.",
+    "expected_role_id": "role_data_analyst"
+  }
+]
+

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "skill_python_basic",
+    "name": "Python basico",
+    "aliases": ["python basico", "python inicial", "programacion python basica"],
+    "category": "programming"
+  },
+  {
+    "id": "skill_python_intermediate",
+    "name": "Python intermedio",
+    "aliases": ["python intermedio", "programacion python intermedia"],
+    "category": "programming"
+  },
+  {
+    "id": "skill_statistics_basic",
+    "name": "Estadistica basica",
+    "aliases": ["estadistica", "estadistica basica", "probabilidad basica"],
+    "category": "math"
+  },
+  {
+    "id": "skill_sql_basic",
+    "name": "SQL basico",
+    "aliases": ["sql", "sql basico", "bases de datos basicas"],
+    "category": "data"
+  },
+  {
+    "id": "skill_data_analysis_basic",
+    "name": "Analisis de datos basico",
+    "aliases": ["analisis de datos", "data analysis basico"],
+    "category": "data"
+  },
+  {
+    "id": "skill_machine_learning_basic",
+    "name": "Machine learning basico",
+    "aliases": ["machine learning", "ml basico", "aprendizaje automatico basico"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_deep_learning_basic",
+    "name": "Deep learning basico",
+    "aliases": ["deep learning", "redes neuronales basicas"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_mlops_basic",
+    "name": "MLOps basico",
+    "aliases": ["mlops", "operaciones de machine learning"],
+    "category": "engineering"
+  }
+]
+

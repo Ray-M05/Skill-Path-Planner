@@ -1,0 +1,80 @@
+[
+  {
+    "id": "course_python_intermediate",
+    "name": "Python intermedio",
+    "description": "Funciones, modulos, archivos y programacion orientada a objetos.",
+    "prerequisites": ["skill_python_basic"],
+    "outcomes": ["skill_python_intermediate"],
+    "duration_weeks": 6,
+    "weekly_hours": 5,
+    "difficulty": 0.35,
+    "pass_base_probability": 0.88
+  },
+  {
+    "id": "course_statistics_basic",
+    "name": "Estadistica basica",
+    "description": "Probabilidad, distribuciones, inferencia y metricas descriptivas.",
+    "prerequisites": [],
+    "outcomes": ["skill_statistics_basic"],
+    "duration_weeks": 6,
+    "weekly_hours": 4,
+    "difficulty": 0.4,
+    "pass_base_probability": 0.86
+  },
+  {
+    "id": "course_sql_basic",
+    "name": "SQL basico",
+    "description": "Consultas, filtros, joins, agregaciones y modelado relacional basico.",
+    "prerequisites": [],
+    "outcomes": ["skill_sql_basic"],
+    "duration_weeks": 4,
+    "weekly_hours": 4,
+    "difficulty": 0.25,
+    "pass_base_probability": 0.9
+  },
+  {
+    "id": "course_data_analysis_basic",
+    "name": "Analisis de datos basico",
+    "description": "Limpieza, exploracion y visualizacion de datos con Python y SQL.",
+    "prerequisites": ["skill_python_intermediate", "skill_sql_basic"],
+    "outcomes": ["skill_data_analysis_basic"],
+    "duration_weeks": 8,
+    "weekly_hours": 6,
+    "difficulty": 0.45,
+    "pass_base_probability": 0.84
+  },
+  {
+    "id": "course_machine_learning_basic",
+    "name": "Machine learning basico",
+    "description": "Modelos supervisados, no supervisados, validacion y evaluacion.",
+    "prerequisites": ["skill_python_intermediate", "skill_statistics_basic"],
+    "outcomes": ["skill_machine_learning_basic"],
+    "duration_weeks": 10,
+    "weekly_hours": 7,
+    "difficulty": 0.6,
+    "pass_base_probability": 0.78
+  },
+  {
+    "id": "course_deep_learning_basic",
+    "name": "Deep learning basico",
+    "description": "Redes neuronales, entrenamiento, regularizacion y frameworks basicos.",
+    "prerequisites": ["skill_machine_learning_basic"],
+    "outcomes": ["skill_deep_learning_basic"],
+    "duration_weeks": 10,
+    "weekly_hours": 8,
+    "difficulty": 0.72,
+    "pass_base_probability": 0.72
+  },
+  {
+    "id": "course_mlops_basic",
+    "name": "MLOps basico",
+    "description": "Versionado de modelos, despliegue, monitoreo y pipelines.",
+    "prerequisites": ["skill_machine_learning_basic"],
+    "outcomes": ["skill_mlops_basic"],
+    "duration_weeks": 8,
+    "weekly_hours": 6,
+    "difficulty": 0.55,
+    "pass_base_probability": 0.8
+  }
+]
+

@@ -1,0 +1,5 @@
+{
+  "variants": ["greedy", "ucs", "astar"],
+  "monte_carlo_runs": 500
+}
+

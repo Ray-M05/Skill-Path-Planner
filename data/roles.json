@@ -1,0 +1,26 @@
+[
+  {
+    "id": "role_ml_engineer",
+    "name": "Ingeniero de Machine Learning",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_statistics_basic",
+      "skill_machine_learning_basic",
+      "skill_deep_learning_basic",
+      "skill_mlops_basic"
+    ],
+    "recommended_skills": ["skill_sql_basic", "skill_data_analysis_basic"]
+  },
+  {
+    "id": "role_data_analyst",
+    "name": "Analista de datos",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_statistics_basic",
+      "skill_sql_basic",
+      "skill_data_analysis_basic"
+    ],
+    "recommended_skills": ["skill_machine_learning_basic"]
+  }
+]
+

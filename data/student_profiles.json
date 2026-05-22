@@ -1,0 +1,22 @@
+[
+  {
+    "id": "profile_beginner",
+    "initial_skills": ["skill_python_basic"],
+    "max_weeks": 72,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.4
+  },
+  {
+    "id": "profile_data_foundation",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_python_intermediate",
+      "skill_sql_basic",
+      "skill_statistics_basic"
+    ],
+    "max_weeks": 40,
+    "max_weekly_hours": 8,
+    "risk_tolerance": 0.5
+  }
+]
+
