@@ -5,6 +5,7 @@ from src.main import (
     _pretty_json,
     build_mock_goal_response,
     build_profile_from_goal,
+    run_planner,
 )
 from src.llm.interpreter import validate_goal_spec
 
@@ -62,3 +63,18 @@ def test_profile_from_goal_uses_extracted_constraints() -> None:
     assert profile.max_weeks == 12
     assert profile.max_weekly_hours == 8
     assert "skill_sql_basic" in profile.initial_skills
+
+
+def test_run_planner_generates_plan_result() -> None:
+    dataset = load_dataset("data")
+    raw_goal = build_mock_goal_response(
+        "Quiero ser analista de datos, se Python basico y SQL basico.",
+        dataset,
+    )
+    goal = validate_goal_spec(raw_goal, dataset)
+    profile = build_profile_from_goal(goal)
+
+    plan = run_planner("astar", goal, dataset, profile)
+
+    assert plan.planner_name == "astar"
+    assert plan.valid

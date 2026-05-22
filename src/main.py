@@ -13,6 +13,9 @@ from .llm.client import LLMClient
 from .llm.interpreter import validate_goal_spec
 from .llm.prompts import GOAL_INTERPRETER_SYSTEM_PROMPT, build_goal_interpreter_user_prompt
 from .models import Dataset, GoalSpec, StudentProfile
+from .planners.astar import astar_plan
+from .planners.greedy import greedy_plan
+from .planners.ucs import ucs_plan
 from .validators import validate_plan
 
 
@@ -129,6 +132,25 @@ def build_profile_from_goal(goal: GoalSpec) -> StudentProfile:
     )
 
 
+def run_planner(
+    planner_name: str,
+    goal: GoalSpec,
+    dataset: Dataset,
+    profile: StudentProfile,
+) -> Any:
+    planners = {
+        "greedy": greedy_plan,
+        "ucs": ucs_plan,
+        "astar": astar_plan,
+    }
+    return planners[planner_name](
+        profile.initial_skills,
+        goal.target_skill_ids,
+        dataset.courses,
+        profile,
+    )
+
+
 def run_cli(args: argparse.Namespace) -> int:
     dataset = load_dataset(args.data_dir)
     settings = load_settings()
@@ -162,32 +184,34 @@ def run_cli(args: argparse.Namespace) -> int:
     goal = validate_goal_spec(raw_goal_spec, dataset)
     print(_section("GOALSPEC VALIDADO", _pretty_json(asdict(goal))))
 
-    course_ids = _parse_course_ids(args.courses)
     validation_profile = build_profile_from_goal(goal)
-    valid, errors = validate_plan(
-        course_ids,
-        validation_profile.initial_skills,
-        goal.target_skill_ids,
-        dataset.courses,
-        validation_profile,
-    )
-    validation_result = {
-        "course_ids": course_ids,
-        "initial_skills": sorted(validation_profile.initial_skills),
-        "target_skills": sorted(goal.target_skill_ids),
-        "max_weeks": validation_profile.max_weeks,
-        "max_weekly_hours": validation_profile.max_weekly_hours,
-        "valid": valid,
-        "errors": errors,
-    }
-    print(_section("VALIDACION FORMAL DE LA TRAYECTORIA", _pretty_json(validation_result)))
 
-    if not course_ids:
+    course_ids = _parse_course_ids(args.courses)
+    if course_ids:
+        valid, errors = validate_plan(
+            course_ids,
+            validation_profile.initial_skills,
+            goal.target_skill_ids,
+            dataset.courses,
+            validation_profile,
+        )
+        validation_result = {
+            "mode": "manual",
+            "course_ids": course_ids,
+            "initial_skills": sorted(validation_profile.initial_skills),
+            "target_skills": sorted(goal.target_skill_ids),
+            "max_weeks": validation_profile.max_weeks,
+            "max_weekly_hours": validation_profile.max_weekly_hours,
+            "valid": valid,
+            "errors": errors,
+        }
+        print(_section("VALIDACION FORMAL DE LA TRAYECTORIA", _pretty_json(validation_result)))
+    else:
+        plan = run_planner(args.planner, goal, dataset, validation_profile)
         print(
             _section(
-                "NOTA",
-                "No se pasaron cursos con --courses. Todavia no hay planificador automatico; "
-                "por ahora esta CLI valida una trayectoria manual.",
+                f"PLAN GENERADO POR {args.planner.upper()}",
+                _pretty_json(asdict(plan)),
             )
         )
 
@@ -204,7 +228,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--courses",
         default="",
-        help="IDs de cursos separados por coma para validar una trayectoria manual.",
+        help="IDs de cursos separados por coma para validar una trayectoria manual. Si se omite, se usa --planner.",
+    )
+    parser.add_argument(
+        "--planner",
+        choices=["greedy", "ucs", "astar"],
+        default="astar",
+        help="Planificador automatico cuando no se pasan cursos manuales.",
     )
     parser.add_argument(
         "--provider",
