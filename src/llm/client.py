@@ -2,14 +2,24 @@ from __future__ import annotations
 
 import json
 from typing import Any
-from config import Settings, load_settings
+from ..config import Settings, load_settings
 
 
 class LLMClient:
-    def __init__(self, settings: Settings | None = None) -> None:
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        mock_response: dict[str, Any] | None = None,
+    ) -> None:
         self.settings = settings or load_settings()
+        self.mock_response = mock_response
 
     def complete_json(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
+        if self.settings.llm_provider == "mock":
+            if self.mock_response is None:
+                raise RuntimeError("LLM_PROVIDER=mock requiere mock_response.")
+            return self.mock_response
+
         if self.settings.llm_provider != "gemini":
             raise ValueError(f"Proveedor LLM no soportado: {self.settings.llm_provider}.")
         if not self.settings.llm_api_key:

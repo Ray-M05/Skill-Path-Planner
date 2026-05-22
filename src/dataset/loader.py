@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Iterable
-from models import Course, Dataset, Role, Skill, StudentProfile
+from ..models import Course, Dataset, Role, Skill, StudentProfile
 
 
 def _read_json(path: str | Path) -> Any:
@@ -137,11 +137,28 @@ def load_profiles(path: str | Path, skills: dict[str, Skill]) -> dict[str, Stude
     return profiles
 
 
-def load_instances(path: str | Path) -> list[dict[str, Any]]:
+def load_instances(
+    path: str | Path,
+    profiles: dict[str, StudentProfile] | None = None,
+    roles: dict[str, Role] | None = None,
+) -> list[dict[str, Any]]:
     if not Path(path).exists():
         return []
     raw_instances = _read_json(path)
     _ensure_unique_ids(raw_instances, "instances.json")
+    if profiles is not None and roles is not None:
+        for item in raw_instances:
+            instance_id = item.get("id")
+            profile_id = item.get("profile_id")
+            role_id = item.get("expected_role_id")
+            if profile_id not in profiles:
+                raise ValueError(
+                    f"La instancia {instance_id} referencia un perfil inexistente: {profile_id}."
+                )
+            if role_id not in roles:
+                raise ValueError(
+                    f"La instancia {instance_id} referencia un rol inexistente: {role_id}."
+                )
     return list(raw_instances)
 
 
@@ -151,7 +168,7 @@ def load_dataset(data_dir: str | Path) -> Dataset:
     courses = load_courses(data_path / "courses.json", skills)
     roles = load_roles(data_path / "roles.json", skills)
     profiles = load_profiles(data_path / "student_profiles.json", skills)
-    instances = load_instances(data_path / "instances.json")
+    instances = load_instances(data_path / "instances.json", profiles, roles)
     return Dataset(
         skills=skills,
         courses=courses,
@@ -159,4 +176,3 @@ def load_dataset(data_dir: str | Path) -> Dataset:
         profiles=profiles,
         instances=instances,
     )
-

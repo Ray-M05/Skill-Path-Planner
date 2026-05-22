@@ -53,6 +53,7 @@ class Dataset:
 class GoalSpec:
     role_id: str
     target_skill_ids: set[str]
+    initial_skill_ids: set[str]
     mentioned_skill_ids: set[str]
     constraints: dict[str, Any]
     ignored_constraints: list[str]
@@ -93,4 +94,3 @@ class PlanResult:
     monte_carlo: dict[str, Any] | None = None
     llm_evaluation: dict[str, Any] | None = None
     final_score: float | None = None
-

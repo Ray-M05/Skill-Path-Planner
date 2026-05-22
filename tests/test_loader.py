@@ -3,7 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from src.dataset.loader import load_courses, load_dataset, load_profiles, load_skills
+from src.dataset.loader import (
+    load_courses,
+    load_dataset,
+    load_instances,
+    load_profiles,
+    load_roles,
+    load_skills,
+)
 from src.models import Dataset
 
 
@@ -100,6 +107,50 @@ def test_load_profiles_rejects_invalid_limits(tmp_path: Path) -> None:
         load_profiles(profiles_path, skills)
 
 
+def test_load_roles_rejects_unknown_skill(tmp_path: Path) -> None:
+    skills = load_skills("data/skills.json")
+    roles_path = tmp_path / "roles.json"
+    roles_path.write_text(
+        json.dumps(
+            [
+                {
+                    "id": "role_bad",
+                    "name": "Rol malo",
+                    "required_skills": ["skill_missing"],
+                    "recommended_skills": [],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="skill inexistente"):
+        load_roles(roles_path, skills)
+
+
+def test_load_instances_rejects_unknown_profile_or_role(tmp_path: Path) -> None:
+    skills = load_skills("data/skills.json")
+    roles = load_roles("data/roles.json", skills)
+    profiles = load_profiles("data/student_profiles.json", skills)
+    instances_path = tmp_path / "instances.json"
+    instances_path.write_text(
+        json.dumps(
+            [
+                {
+                    "id": "inst_bad",
+                    "profile_id": "profile_missing",
+                    "goal_text": "Quiero ser analista de datos.",
+                    "expected_role_id": "role_data_analyst",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="perfil inexistente"):
+        load_instances(instances_path, profiles, roles)
+
+
 def test_load_skills_rejects_duplicate_ids(tmp_path: Path) -> None:
     skills_path = tmp_path / "skills.json"
     skills_path.write_text(
@@ -124,4 +175,3 @@ def test_load_skills_rejects_duplicate_ids(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="duplicado"):
         load_skills(skills_path)
-

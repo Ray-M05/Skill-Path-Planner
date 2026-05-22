@@ -58,4 +58,3 @@ def test_dataclasses_can_be_instantiated() -> None:
     assert dataset.skills[skill.id] == skill
     assert state.skills == frozenset({skill.id})
     assert result.valid is False
-
