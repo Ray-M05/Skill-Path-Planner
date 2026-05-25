@@ -49,4 +49,12 @@ Ejemplo con Gemini real y validacion de una trayectoria manual, usando `GEMINI_A
 python -m src.main --provider gemini --goal "Quiero ser analista de datos en 12 semanas, se Python basico y SQL basico, y puedo dedicar 8 horas semanales." --courses "course_python_intermediate,course_statistics_basic,course_data_analysis_basic"
 ```
 
-La CLI imprime el texto del usuario, el prompt exacto enviado al LLM, la respuesta cruda, el `GoalSpec` validado y el resultado del validador formal. Si no pasas `--courses`, genera la trayectoria con `--planner greedy`, `--planner ucs` o `--planner astar`.
+La CLI imprime el texto del usuario, el prompt exacto enviado al LLM, la respuesta cruda, el `GoalSpec` validado y el resultado del validador formal. Si no pasas `--courses`, genera la trayectoria con `--planner greedy`, `--planner ucs` o `--planner asççç`.
+
+Ejemplo con Monte Carlo:
+
+```bash
+python -m src.main --provider mock --planner astar_csp --monte-carlo-runs 500 --monte-carlo-seed 42 --goal "Quiero ser ingeniero de machine learning en 18 meses, se Python basico y puedo dedicar 10 horas semanales."
+```
+
+Para una explicacion paso a paso de la simulacion, revisa `MONTE_CARLO_EXPLICACION.md`.

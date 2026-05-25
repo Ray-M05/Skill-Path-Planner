@@ -7,6 +7,7 @@ from src.main import (
     build_profile_from_goal,
     run_planner,
 )
+from src.simulation.monte_carlo import attach_monte_carlo_to_plan
 from src.llm.interpreter import validate_goal_spec
 
 
@@ -78,3 +79,18 @@ def test_run_planner_generates_plan_result() -> None:
 
     assert plan.planner_name == "astar"
     assert plan.valid
+
+def test_cli_plan_can_receive_monte_carlo_metrics() -> None:
+    dataset = load_dataset("data")
+    raw_goal = build_mock_goal_response(
+        "Quiero ser analista de datos, se Python basico y SQL basico.",
+        dataset,
+    )
+    goal = validate_goal_spec(raw_goal, dataset)
+    profile = build_profile_from_goal(goal)
+    plan = run_planner("astar", goal, dataset, profile)
+
+    attach_monte_carlo_to_plan(plan, dataset.courses, profile, runs=10, seed=4)
+
+    assert plan.monte_carlo is not None
+    assert plan.monte_carlo["runs"] == 10

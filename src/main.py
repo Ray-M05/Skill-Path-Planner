@@ -16,6 +16,7 @@ from .models import Dataset, GoalSpec, StudentProfile
 from .planners.astar import astar_plan
 from .planners.greedy import greedy_plan
 from .planners.ucs import ucs_plan
+from .simulation.monte_carlo import attach_monte_carlo_to_plan, evaluate_plan_monte_carlo
 from .validators import validate_plan
 
 
@@ -205,9 +206,25 @@ def run_cli(args: argparse.Namespace) -> int:
             "valid": valid,
             "errors": errors,
         }
+        if valid and args.monte_carlo_runs > 0:
+            validation_result["monte_carlo"] = evaluate_plan_monte_carlo(
+                course_ids,
+                dataset.courses,
+                validation_profile,
+                runs=args.monte_carlo_runs,
+                seed=args.monte_carlo_seed,
+            )
         print(_section("VALIDACION FORMAL DE LA TRAYECTORIA", _pretty_json(validation_result)))
     else:
         plan = run_planner(args.planner, goal, dataset, validation_profile)
+        if args.monte_carlo_runs > 0:
+            plan = attach_monte_carlo_to_plan(
+                plan,
+                dataset.courses,
+                validation_profile,
+                runs=args.monte_carlo_runs,
+                seed=args.monte_carlo_seed,
+            )
         print(
             _section(
                 f"PLAN GENERADO POR {args.planner.upper()}",
@@ -251,6 +268,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--data-dir",
         default="data",
         help="Directorio del dataset.",
+    )
+    parser.add_argument(
+        "--monte-carlo-runs",
+        type=int,
+        default=0,
+        help="Numero de simulaciones Monte Carlo. 0 lo desactiva.",
+    )
+    parser.add_argument(
+        "--monte-carlo-seed",
+        type=int,
+        default=42,
+        help="Semilla para reproducibilidad de Monte Carlo.",
     )
     return parser
 
