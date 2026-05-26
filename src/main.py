@@ -10,6 +10,7 @@ from .config import Settings, load_settings
 from .dataset.loader import load_dataset
 from .dataset.resolver import normalize_text
 from .llm.client import LLMClient
+from .llm.evaluator import evaluate_plan_with_llm
 from .llm.interpreter import validate_goal_spec
 from .llm.prompts import GOAL_INTERPRETER_SYSTEM_PROMPT, build_goal_interpreter_user_prompt
 from .models import Dataset, GoalSpec, StudentProfile
@@ -126,7 +127,7 @@ def build_profile_from_goal(goal: GoalSpec) -> StudentProfile:
     max_weekly_hours = goal.constraints.get("max_weekly_hours") or 999
     return StudentProfile(
         id="profile_from_query",
-        initial_skills=set(goal.initial_skill_ids),
+        initial_skills=frozenset(goal.initial_skill_ids),
         max_weeks=int(max_weeks),
         max_weekly_hours=int(max_weekly_hours),
         risk_tolerance=0.5,
@@ -225,6 +226,14 @@ def run_cli(args: argparse.Namespace) -> int:
                 runs=args.monte_carlo_runs,
                 seed=args.monte_carlo_seed,
             )
+        if args.evaluate:
+            role = dataset.roles.get(goal.role_id)
+            if role is not None:
+                use_mock = provider == "mock"
+                eval_client = LLMClient(settings) if not use_mock else None
+                plan.llm_evaluation = evaluate_plan_with_llm(
+                    plan, role, goal, dataset, eval_client, use_mock=use_mock
+                )
         print(
             _section(
                 f"PLAN GENERADO POR {args.planner.upper()}",
@@ -280,6 +289,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=42,
         help="Semilla para reproducibilidad de Monte Carlo.",
+    )
+    parser.add_argument(
+        "--evaluate",
+        action="store_true",
+        default=False,
+        help="Evaluar cualitativamente el plan con el LLM Evaluator.",
     )
     return parser
 

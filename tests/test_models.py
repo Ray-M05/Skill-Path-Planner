@@ -12,8 +12,8 @@ def test_dataclasses_can_be_instantiated() -> None:
         id="course_python",
         name="Python",
         description="Intro",
-        prerequisites=set(),
-        outcomes={skill.id},
+        prerequisites=frozenset(),
+        outcomes=frozenset({skill.id}),
         duration_weeks=4,
         weekly_hours=5,
         difficulty=0.2,
@@ -22,12 +22,12 @@ def test_dataclasses_can_be_instantiated() -> None:
     role = Role(
         id="role_data_analyst",
         name="Analista de datos",
-        required_skills={skill.id},
-        recommended_skills=set(),
+        required_skills=frozenset({skill.id}),
+        recommended_skills=frozenset(),
     )
     profile = StudentProfile(
         id="profile_beginner",
-        initial_skills=set(),
+        initial_skills=frozenset(),
         max_weeks=20,
         max_weekly_hours=10,
         risk_tolerance=0.4,

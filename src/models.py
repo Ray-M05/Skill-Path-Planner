@@ -15,8 +15,8 @@ class Course:
     id: str
     name: str
     description: str
-    prerequisites: set[str]
-    outcomes: set[str]
+    prerequisites: frozenset[str]
+    outcomes: frozenset[str]
     duration_weeks: int
     weekly_hours: int
     difficulty: float
@@ -27,14 +27,14 @@ class Course:
 class Role:
     id: str
     name: str
-    required_skills: set[str]
-    recommended_skills: set[str]
+    required_skills: frozenset[str]
+    recommended_skills: frozenset[str]
 
 
 @dataclass(frozen=True)
 class StudentProfile:
     id: str
-    initial_skills: set[str]
+    initial_skills: frozenset[str]
     max_weeks: int
     max_weekly_hours: int
     risk_tolerance: float
@@ -49,7 +49,7 @@ class Dataset:
     instances: list[dict[str, Any]] = field(default_factory=list)
 
 
-@dataclass(frozen=True)
+@dataclass  # sin frozen=True: los campos dict y list no son hashables
 class GoalSpec:
     role_id: str
     target_skill_ids: set[str]

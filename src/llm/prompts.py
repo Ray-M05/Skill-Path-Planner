@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 from ..dataset.resolver import RoleResolver, SkillResolver
-from ..models import Dataset
+from ..models import Dataset, GoalSpec, PlanResult, Role
 
 
 GOAL_INTERPRETER_SYSTEM_PROMPT = """Eres un componente de extraccion estructurada para un sistema de planificacion de trayectorias profesionales.
@@ -56,5 +56,83 @@ def build_goal_interpreter_user_prompt(
             f"Roles permitidos:\n{_to_pretty_json(allowed_roles)}",
             f"Habilidades permitidas:\n{_to_pretty_json(allowed_skills)}",
             f"Devuelve este JSON:\n{_to_pretty_json(output_schema)}",
+        ]
+    )
+
+
+# Evaluador de trayectorias
+
+PLAN_EVALUATOR_SYSTEM_PROMPT = """Eres un evaluador de calidad de trayectorias profesionales de aprendizaje.
+
+Reglas obligatorias:
+1. Devuelve exclusivamente JSON valido.
+2. Evalua la calidad CUALITATIVA de la trayectoria: orden pedagogico, coherencia, adecuacion al perfil y valor profesional.
+3. No valides prerrequisitos: eso ya lo hizo otro modulo.
+4. No evalues costo economico. El sistema no modela costo de cursos.
+5. Penaliza trayectorias con orden pedagogico debil (cursos avanzados antes que fundamentos).
+6. Penaliza trayectorias redundantes (cursos que aportan habilidades ya cubiertas).
+7. Penaliza trayectorias poco alineadas con el rol objetivo.
+8. Penaliza trayectorias poco realistas por tiempo, dificultad acumulada o carga semanal.
+9. Todos los valores numericos deben estar entre 0.0 y 1.0.
+10. No inventes cursos ni habilidades.
+11. No escribas texto fuera del JSON.
+"""
+
+_EVALUATOR_OUTPUT_SCHEMA = {
+    "goal_alignment": 0.0,
+    "pedagogical_coherence": 0.0,
+    "profile_realism": 0.0,
+    "non_redundancy": 0.0,
+    "professional_value": 0.0,
+    "global_quality": 0.0,
+    "main_strengths": [],
+    "main_weaknesses": [],
+    "justification": "",
+}
+
+
+def build_plan_evaluator_user_prompt(
+    plan: PlanResult,
+    role: Role,
+    goal_spec: GoalSpec,
+    dataset: Dataset,
+) -> str:
+    role_info = {
+        "id": role.id,
+        "name": role.name,
+        "required_skills": sorted(role.required_skills),
+        "recommended_skills": sorted(role.recommended_skills),
+    }
+    profile_info = {
+        "initial_skill_ids": sorted(goal_spec.initial_skill_ids),
+        "max_weeks": goal_spec.constraints.get("max_weeks"),
+        "max_weekly_hours": goal_spec.constraints.get("max_weekly_hours"),
+    }
+    target_skills_info = [
+        {"id": sid, "name": dataset.skills[sid].name}
+        for sid in sorted(goal_spec.target_skill_ids)
+        if sid in dataset.skills
+    ]
+    plan_courses_info = [
+        {
+            "id": cid,
+            "name": dataset.courses[cid].name,
+            "description": dataset.courses[cid].description,
+            "duration_weeks": dataset.courses[cid].duration_weeks,
+            "weekly_hours": dataset.courses[cid].weekly_hours,
+            "difficulty": dataset.courses[cid].difficulty,
+            "outcomes": sorted(dataset.courses[cid].outcomes),
+        }
+        for cid in plan.course_ids
+        if cid in dataset.courses
+    ]
+
+    return "\n\n".join(
+        [
+            f"Rol objetivo:\n{_to_pretty_json(role_info)}",
+            f"Perfil inicial:\n{_to_pretty_json(profile_info)}",
+            f"Habilidades objetivo:\n{_to_pretty_json(target_skills_info)}",
+            f"Trayectoria propuesta ({len(plan_courses_info)} cursos en orden):\n{_to_pretty_json(plan_courses_info)}",
+            f"Devuelve exactamente este JSON:\n{_to_pretty_json(_EVALUATOR_OUTPUT_SCHEMA)}",
         ]
     )

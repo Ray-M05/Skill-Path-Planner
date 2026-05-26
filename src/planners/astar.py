@@ -29,6 +29,8 @@ def h_cost(state: SearchState, target_skills: set[str], courses: dict[str, Cours
     if not missing:
         return 0.0
 
+    min_duration = min(c.duration_weeks for c in courses.values())
+    min_difficulty = min(c.difficulty for c in courses.values())
     max_gain = 0
     for course in courses.values():
         objective_gain = len(course.outcomes & missing)
@@ -37,7 +39,9 @@ def h_cost(state: SearchState, target_skills: set[str], courses: dict[str, Cours
 
     if max_gain == 0:
         return math.inf
-    return math.ceil(len(missing) / max_gain)
+
+    n_courses_needed = math.ceil(len(missing) / max_gain)
+    return n_courses_needed * (min_duration + 2.0 * min_difficulty + 0.5)
 
 
 def astar_plan(

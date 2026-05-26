@@ -62,7 +62,7 @@ def test_astar_h_cost_returns_zero_when_goal_is_reached() -> None:
     assert h_cost(state, {"skill_sql_basic"}, dataset.courses) == 0
 
 
-def test_astar_h_cost_uses_missing_skills_over_max_gain() -> None:
+def test_astar_h_cost_is_positive_and_admissible_units() -> None:
     dataset = load_dataset("data")
     state = SearchState(
         skills=frozenset(),
@@ -71,11 +71,17 @@ def test_astar_h_cost_uses_missing_skills_over_max_gain() -> None:
         difficulty_sum=0.0,
     )
 
-    assert h_cost(
+    value = h_cost(
         state,
         {"skill_python_intermediate", "skill_statistics_basic"},
         dataset.courses,
-    ) == 2
+    )
+    # h(n) debe ser > 0 cuando faltan habilidades
+    assert value > 0
+    # h(n) está ahora en las mismas unidades que g(n): incluye semanas y dificultad,
+    # por lo que debe ser mayor que el simple conteo de cursos (2)
+    min_duration = min(c.duration_weeks for c in dataset.courses.values())
+    assert value >= min_duration
 
 
 def test_astar_k_plans_returns_unique_valid_plans() -> None:
@@ -94,7 +100,7 @@ def test_planners_fail_when_profile_limits_make_goal_impossible() -> None:
     dataset = load_dataset("data")
     profile = StudentProfile(
         id="profile_impossible",
-        initial_skills={"skill_python_basic"},
+        initial_skills=frozenset({"skill_python_basic"}),
         max_weeks=4,
         max_weekly_hours=10,
         risk_tolerance=0.4,

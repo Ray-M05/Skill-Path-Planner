@@ -67,8 +67,8 @@ def load_courses(path: str | Path, skills: dict[str, Skill]) -> dict[str, Course
             context,
         )
 
-        prerequisites = set(item.get("prerequisites", []))
-        outcomes = set(item.get("outcomes", []))
+        prerequisites = frozenset(item.get("prerequisites", []))
+        outcomes = frozenset(item.get("outcomes", []))
         for skill_id in prerequisites:
             _ensure_skill_exists(skill_id, skills, context)
         for skill_id in outcomes:
@@ -96,8 +96,8 @@ def load_roles(path: str | Path, skills: dict[str, Skill]) -> dict[str, Role]:
 
     for item in raw_roles:
         context = f"El rol {item.get('id')}"
-        required_skills = set(item.get("required_skills", []))
-        recommended_skills = set(item.get("recommended_skills", []))
+        required_skills = frozenset(item.get("required_skills", []))
+        recommended_skills = frozenset(item.get("recommended_skills", []))
         for skill_id in required_skills | recommended_skills:
             _ensure_skill_exists(skill_id, skills, context)
 
@@ -122,7 +122,7 @@ def load_profiles(path: str | Path, skills: dict[str, Skill]) -> dict[str, Stude
         _ensure_positive_int(item.get("max_weekly_hours"), "max_weekly_hours", context)
         _ensure_between_zero_and_one(item.get("risk_tolerance"), "risk_tolerance", context)
 
-        initial_skills = set(item.get("initial_skills", []))
+        initial_skills = frozenset(item.get("initial_skills", []))
         for skill_id in initial_skills:
             _ensure_skill_exists(skill_id, skills, context)
 
