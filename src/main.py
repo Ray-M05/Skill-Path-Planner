@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import pathlib
 import re
 from dataclasses import asdict
 from typing import Any
@@ -13,10 +14,12 @@ from .llm.client import LLMClient
 from .llm.evaluator import evaluate_plan_with_llm
 from .llm.interpreter import validate_goal_spec
 from .llm.prompts import GOAL_INTERPRETER_SYSTEM_PROMPT, build_goal_interpreter_user_prompt
-from .models import Dataset, GoalSpec, StudentProfile
-from .planners.astar import astar_plan
+from .metrics import extract_metrics_row, rows_to_csv_string
+from .models import Dataset, GoalSpec, PlanResult, StudentProfile
+from .planners.astar import astar_k_plans, astar_plan
 from .planners.greedy import greedy_plan
 from .planners.ucs import ucs_plan
+from .scoring import compute_final_score, rank_plans
 from .simulation.monte_carlo import attach_monte_carlo_to_plan, evaluate_plan_monte_carlo
 from .validators import validate_plan
 
@@ -139,7 +142,17 @@ def run_planner(
     goal: GoalSpec,
     dataset: Dataset,
     profile: StudentProfile,
-) -> Any:
+) -> PlanResult:
+    """Alias público para compatibilidad con tests existentes."""
+    return run_planner_single(planner_name, goal, dataset, profile)
+
+
+def run_planner_single(
+    planner_name: str,
+    goal: GoalSpec,
+    dataset: Dataset,
+    profile: StudentProfile,
+) -> PlanResult:
     planners = {
         "greedy": greedy_plan,
         "ucs": ucs_plan,
@@ -151,6 +164,65 @@ def run_planner(
         dataset.courses,
         profile,
     )
+
+
+def run_planner_k(
+    planner_name: str,
+    k: int,
+    goal: GoalSpec,
+    dataset: Dataset,
+    profile: StudentProfile,
+) -> list[PlanResult]:
+    """Devuelve hasta k planes. Solo A* soporta k>1; otros planificadores devuelven 1 plan."""
+    if planner_name == "astar" and k > 1:
+        plans = astar_k_plans(
+            profile.initial_skills,
+            goal.target_skill_ids,
+            dataset.courses,
+            profile,
+            k=k,
+        )
+        for p in plans:
+            p.planner_name = "astar"
+        return plans
+    return [run_planner_single(planner_name, goal, dataset, profile)]
+
+
+def _enrich_plan(
+    plan: PlanResult,
+    goal: GoalSpec,
+    dataset: Dataset,
+    profile: StudentProfile,
+    provider: str,
+    settings: Settings,
+    monte_carlo_runs: int,
+    monte_carlo_seed: int,
+    evaluate: bool,
+) -> PlanResult:
+    """Adjunta Monte Carlo, evaluación LLM y score final al plan."""
+    if monte_carlo_runs > 0:
+        plan = attach_monte_carlo_to_plan(
+            plan,
+            dataset.courses,
+            profile,
+            runs=monte_carlo_runs,
+            seed=monte_carlo_seed,
+        )
+
+    if evaluate:
+        role = dataset.roles.get(goal.role_id)
+        if role is not None:
+            use_mock = provider == "mock"
+            eval_client = LLMClient(settings) if not use_mock else None
+            plan.llm_evaluation = evaluate_plan_with_llm(
+                plan, role, goal, dataset, eval_client, use_mock=use_mock
+            )
+
+    role = dataset.roles.get(goal.role_id)
+    if role is not None and plan.valid:
+        plan.final_score = compute_final_score(plan, role, profile)
+
+    return plan
 
 
 def run_cli(args: argparse.Namespace) -> int:
@@ -188,6 +260,7 @@ def run_cli(args: argparse.Namespace) -> int:
 
     validation_profile = build_profile_from_goal(goal)
 
+    # --- Modo validación manual de trayectoria ---
     course_ids = _parse_course_ids(args.courses)
     if course_ids:
         valid, errors = validate_plan(
@@ -216,36 +289,93 @@ def run_cli(args: argparse.Namespace) -> int:
                 seed=args.monte_carlo_seed,
             )
         print(_section("VALIDACION FORMAL DE LA TRAYECTORIA", _pretty_json(validation_result)))
-    else:
-        plan = run_planner(args.planner, goal, dataset, validation_profile)
-        if args.monte_carlo_runs > 0:
-            plan = attach_monte_carlo_to_plan(
+        return 0
+
+    # --- Modo planificador automático ---
+    k = args.k
+    plans = run_planner_k(args.planner, k, goal, dataset, validation_profile)
+
+    if not plans:
+        print(_section(f"PLANIFICADOR {args.planner.upper()}", "No se encontro ninguna trayectoria valida."))
+        return 1
+
+    enriched: list[PlanResult] = []
+    for plan in plans:
+        enriched.append(
+            _enrich_plan(
                 plan,
-                dataset.courses,
+                goal,
+                dataset,
                 validation_profile,
-                runs=args.monte_carlo_runs,
-                seed=args.monte_carlo_seed,
+                provider,
+                settings,
+                args.monte_carlo_runs,
+                args.monte_carlo_seed,
+                args.evaluate,
             )
-        if args.evaluate:
-            role = dataset.roles.get(goal.role_id)
-            if role is not None:
-                use_mock = provider == "mock"
-                eval_client = LLMClient(settings) if not use_mock else None
-                plan.llm_evaluation = evaluate_plan_with_llm(
-                    plan, role, goal, dataset, eval_client, use_mock=use_mock
-                )
+        )
+
+    ranked = rank_plans(enriched)
+
+    if k == 1 or len(ranked) == 1:
         print(
             _section(
                 f"PLAN GENERADO POR {args.planner.upper()}",
-                _pretty_json(asdict(plan)),
+                _pretty_json(asdict(ranked[0])),
             )
         )
+    else:
+        # Mostrar el mejor plan completo y un resumen del ranking
+        best = ranked[0]
+        print(
+            _section(
+                f"MEJOR PLAN (1/{len(ranked)}) — {args.planner.upper()}",
+                _pretty_json(asdict(best)),
+            )
+        )
+
+        ranking_summary = [
+            {
+                "rank": i + 1,
+                "course_ids": p.course_ids,
+                "total_weeks": p.total_weeks,
+                "valid": p.valid,
+                "final_score": p.final_score,
+                "mc_success": (
+                    p.monte_carlo.get("success_probability")
+                    if p.monte_carlo and not p.monte_carlo.get("skipped")
+                    else None
+                ),
+                "llm_quality": (
+                    p.llm_evaluation.get("global_quality")
+                    if p.llm_evaluation and not p.llm_evaluation.get("skipped")
+                    else None
+                ),
+            }
+            for i, p in enumerate(ranked)
+        ]
+        print(_section(f"RANKING DE {len(ranked)} PLANES", _pretty_json(ranking_summary)))
+
+    # --- Métricas CSV ---
+    if args.metrics or args.metrics_output:
+        rows = [
+            extract_metrics_row(p, instance_id="cli", target_skill_ids=goal.target_skill_ids)
+            for p in ranked
+        ]
+        csv_content = rows_to_csv_string(rows)
+        if args.metrics:
+            print(_section("METRICAS CSV", csv_content))
+        if args.metrics_output:
+            out_path = pathlib.Path(args.metrics_output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(csv_content, encoding="utf-8")
+            print(f"\nMetricas guardadas en: {out_path.resolve()}")
 
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CLI preliminar del Skill Path Planner.")
+    parser = argparse.ArgumentParser(description="CLI del Skill Path Planner.")
     parser.add_argument(
         "--goal",
         required=True,
@@ -261,6 +391,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["greedy", "ucs", "astar"],
         default="astar",
         help="Planificador automatico cuando no se pasan cursos manuales.",
+    )
+    parser.add_argument(
+        "--k",
+        type=int,
+        default=1,
+        help="Numero de trayectorias candidatas a generar (solo A* soporta k>1).",
     )
     parser.add_argument(
         "--provider",
@@ -295,6 +431,18 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Evaluar cualitativamente el plan con el LLM Evaluator.",
+    )
+    parser.add_argument(
+        "--metrics",
+        action="store_true",
+        default=False,
+        help="Imprimir fila CSV de metricas en terminal.",
+    )
+    parser.add_argument(
+        "--metrics-output",
+        default=None,
+        metavar="ARCHIVO.csv",
+        help="Ruta de archivo CSV donde guardar las metricas (crea directorios si no existen).",
     )
     return parser
 
