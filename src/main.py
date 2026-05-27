@@ -158,6 +158,16 @@ def run_planner_single(
         "ucs": ucs_plan,
         "astar": astar_plan,
     }
+    role = dataset.roles.get(goal.role_id)
+    rec = role.recommended_skills if role else frozenset()
+    if planner_name == "astar":
+        return astar_plan(
+            profile.initial_skills,
+            goal.target_skill_ids,
+            dataset.courses,
+            profile,
+            recommended_skills=rec,
+        )
     return planners[planner_name](
         profile.initial_skills,
         goal.target_skill_ids,
@@ -176,6 +186,8 @@ def run_planner_k(
 ) -> list[PlanResult]:
     """Devuelve hasta k planes. Solo A* soporta k>1; otros planificadores devuelven 1 plan."""
     if planner_name == "astar":
+        role = dataset.roles.get(goal.role_id)
+        rec = role.recommended_skills if role else frozenset()
         plans = astar_k_plans(
             profile.initial_skills,
             goal.target_skill_ids,
@@ -183,6 +195,7 @@ def run_planner_k(
             profile,
             k=k,
             max_nodes=max_nodes,
+            recommended_skills=rec,
         )
         for p in plans:
             p.planner_name = "astar"

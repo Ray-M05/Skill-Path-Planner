@@ -67,15 +67,16 @@ PLAN_EVALUATOR_SYSTEM_PROMPT = """Eres un evaluador de calidad de trayectorias p
 Reglas obligatorias:
 1. Devuelve exclusivamente JSON valido.
 2. Evalua la calidad CUALITATIVA de la trayectoria: orden pedagogico, coherencia, adecuacion al perfil y valor profesional.
-3. No valides prerrequisitos: eso ya lo hizo otro modulo.
-4. No evalues costo economico. El sistema no modela costo de cursos.
-5. Penaliza trayectorias con orden pedagogico debil (cursos avanzados antes que fundamentos).
-6. Penaliza trayectorias redundantes (cursos que aportan habilidades ya cubiertas).
-7. Penaliza trayectorias poco alineadas con el rol objetivo.
-8. Penaliza trayectorias poco realistas por tiempo, dificultad acumulada o carga semanal.
-9. Todos los valores numericos deben estar entre 0.0 y 1.0.
-10. No inventes cursos ni habilidades.
-11. No escribas texto fuera del JSON.
+3. IMPORTANTE: La trayectoria ya paso validacion formal automatica (prerrequisitos, horas semanales por curso, duracion total). No re-valides esas restricciones ni las menciones como debilidades.
+4. Los cursos se toman de forma secuencial, uno a la vez. max_weekly_hours aplica a cada curso individualmente, nunca a la suma de todos. No sumes horas entre cursos.
+5. No evalues costo economico. El sistema no modela costo de cursos.
+6. Penaliza trayectorias con orden pedagogico debil (cursos avanzados antes que fundamentos).
+7. Penaliza trayectorias redundantes (cursos que aportan habilidades ya cubiertas).
+8. Penaliza trayectorias poco alineadas con el rol objetivo.
+9. Concentra profile_realism en: si el nivel de dificultad acumulada es apropiado para el perfil inicial, y si el orden es pedagogicamente progresivo.
+10. Todos los valores numericos deben estar entre 0.0 y 1.0.
+11. No inventes cursos ni habilidades.
+12. No escribas texto fuera del JSON.
 """
 
 _EVALUATOR_OUTPUT_SCHEMA = {
@@ -127,12 +128,19 @@ def build_plan_evaluator_user_prompt(
         if cid in dataset.courses
     ]
 
+    plan_summary = {
+        "total_weeks": plan.total_weeks,
+        "validated": True,
+        "note": "Esta trayectoria paso validacion formal: prerrequisitos, horas semanales por curso y duracion total dentro del presupuesto.",
+    }
+
     return "\n\n".join(
         [
             f"Rol objetivo:\n{_to_pretty_json(role_info)}",
             f"Perfil inicial:\n{_to_pretty_json(profile_info)}",
             f"Habilidades objetivo:\n{_to_pretty_json(target_skills_info)}",
-            f"Trayectoria propuesta ({len(plan_courses_info)} cursos en orden):\n{_to_pretty_json(plan_courses_info)}",
+            f"Resumen de validacion:\n{_to_pretty_json(plan_summary)}",
+            f"Trayectoria propuesta ({len(plan_courses_info)} cursos en orden secuencial):\n{_to_pretty_json(plan_courses_info)}",
             f"Devuelve exactamente este JSON:\n{_to_pretty_json(_EVALUATOR_OUTPUT_SCHEMA)}",
         ]
     )

@@ -1,4 +1,4 @@
-"""Tests para max_nodes, score_breakdown y LLM cache."""
+"""Tests para max_nodes, score_breakdown, LLM cache y recommended_skills en A*."""
 from __future__ import annotations
 
 import json
@@ -225,3 +225,53 @@ def test_llm_cache_different_prompts_different_keys() -> None:
     k2 = client._cache_key("sys", "prompt_B")
 
     assert k1 != k2
+
+# A* recommended_skills bonus
+def test_astar_with_recommended_covers_more_optional_skills() -> None:
+    """Con recommended_skills activo, A* debe incluir al menos un curso que cubra
+    una skill recomendada cuando existe un camino que lo permite sin coste extra."""
+    dataset = load_dataset("data")
+    profile = dataset.profiles["profile_beginner"]
+    role = dataset.roles["role_data_analyst"]
+
+    plan_with = astar_plan(
+        profile.initial_skills,
+        role.required_skills,
+        dataset.courses,
+        profile,
+        recommended_skills=role.recommended_skills,
+    )
+    plan_without = astar_plan(
+        profile.initial_skills,
+        role.required_skills,
+        dataset.courses,
+        profile,
+    )
+
+    # Ambos planes deben ser válidos
+    assert plan_with.valid
+    assert plan_without.valid
+
+    covered_with = len(role.recommended_skills & plan_with.reached_skills)
+    covered_without = len(role.recommended_skills & plan_without.reached_skills)
+
+    # Con el bonus, el plan debe cubrir al menos las mismas skills recomendadas
+    assert covered_with >= covered_without
+
+
+def test_astar_recommended_does_not_break_required_coverage() -> None:
+    """El bonus de recomendadas no debe impedir que el plan cubra todas las requeridas."""
+    dataset = load_dataset("data")
+    profile = dataset.profiles["profile_beginner"]
+    role = dataset.roles["role_ml_engineer"]
+
+    plan = astar_plan(
+        profile.initial_skills,
+        role.required_skills,
+        dataset.courses,
+        profile,
+        recommended_skills=role.recommended_skills,
+    )
+
+    assert plan.valid
+    assert role.required_skills.issubset(plan.reached_skills)

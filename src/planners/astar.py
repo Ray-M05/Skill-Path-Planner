@@ -16,12 +16,19 @@ from .common import (
 )
 
 
-def g_cost(state: SearchState) -> float:
-    return (
+_REC_BONUS = 0.5  # reducción de costo por cada skill recomendada cubierta
+
+
+def g_cost(state: SearchState, recommended_skills: frozenset[str] | None = None) -> float:
+    base = (
         state.weeks_used
         + 2.0 * state.difficulty_sum
         + 0.5 * len(state.taken_courses)
     )
+    if recommended_skills:
+        covered = len(recommended_skills & set(state.skills))
+        base -= _REC_BONUS * covered
+    return base
 
 
 def h_cost(state: SearchState, target_skills: set[str], courses: dict[str, Course]) -> float:
@@ -50,8 +57,12 @@ def astar_plan(
     courses: dict[str, Course],
     profile: StudentProfile,
     max_nodes: int = 0,
+    recommended_skills: frozenset[str] | None = None,
 ) -> PlanResult:
-    plans = astar_k_plans(initial_skills, target_skills, courses, profile, k=1, max_nodes=max_nodes)
+    plans = astar_k_plans(
+        initial_skills, target_skills, courses, profile,
+        k=1, max_nodes=max_nodes, recommended_skills=recommended_skills,
+    )
     if plans:
         plans[0].planner_name = "astar"
         return plans[0]
@@ -79,8 +90,10 @@ def astar_k_plans(
     profile: StudentProfile,
     k: int = 3,
     max_nodes: int = 0,
+    recommended_skills: frozenset[str] | None = None,
 ) -> list[PlanResult]:
     """Genera hasta k planes con A*. max_nodes=0 significa sin limite de expansion."""
+    rec = recommended_skills or frozenset()
     start_time = time.perf_counter()
     initial_state = SearchState(
         skills=frozenset(initial_skills),
@@ -94,7 +107,7 @@ def astar_k_plans(
 
     counter = itertools.count()
     frontier: list[tuple[float, int, SearchState]] = [
-        (g_cost(initial_state) + initial_h, next(counter), initial_state)
+        (g_cost(initial_state, rec) + initial_h, next(counter), initial_state)
     ]
     best_cost_by_key: dict[tuple[frozenset[str], tuple[str, ...]], float] = {}
     plans: list[PlanResult] = []
@@ -108,7 +121,7 @@ def astar_k_plans(
 
         max_frontier_size = max(max_frontier_size, len(frontier))
         _, _, state = heapq.heappop(frontier)
-        state_cost = g_cost(state)
+        state_cost = g_cost(state, rec)
         state_key = (state.skills, state.taken_courses)
         if state_key in best_cost_by_key and best_cost_by_key[state_key] <= state_cost:
             continue
@@ -142,7 +155,7 @@ def astar_k_plans(
             heuristic = h_cost(next_state, target_skills, courses)
             if math.isinf(heuristic):
                 continue
-            priority = g_cost(next_state) + heuristic
+            priority = g_cost(next_state, rec) + heuristic
             heapq.heappush(frontier, (priority, next(counter), next_state))
 
     return plans

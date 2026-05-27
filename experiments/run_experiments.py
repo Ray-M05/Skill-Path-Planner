@@ -61,7 +61,9 @@ def run_variant(
     elif variant == "ucs":
         plan = ucs_plan(initial, target, courses, profile)
     else:
-        plans = astar_k_plans(initial, target, courses, profile, k=1, max_nodes=max_nodes)
+        role = dataset.roles.get(goal.role_id)
+        rec = role.recommended_skills if role else frozenset()
+        plans = astar_k_plans(initial, target, courses, profile, k=1, max_nodes=max_nodes, recommended_skills=rec)
         if plans:
             plan = plans[0]
             plan.planner_name = variant

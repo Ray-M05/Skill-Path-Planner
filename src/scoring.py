@@ -23,6 +23,18 @@ def normalize_value(value: float, max_value: float) -> float:
     return min(1.0, value / max_value)
 
 
+def time_pressure_penalty(total_weeks: int, max_weeks: int, threshold: float = 0.70) -> float:
+    """Penaliza solo cuando el plan consume más del `threshold` del presupuesto.
+    """
+    if max_weeks <= 0:
+        return 0.0
+    usage = total_weeks / max_weeks
+    if usage <= threshold:
+        return 0.0
+    remaining = 1.0 - threshold
+    return min(1.0, (usage - threshold) / remaining)
+
+
 def compute_score_with_breakdown(
     plan: PlanResult,
     role: Role,
@@ -43,7 +55,7 @@ def compute_score_with_breakdown(
     """
     req_coverage = required_coverage_score(plan.reached_skills, role.required_skills)
     rec_coverage = recommended_coverage_score(plan.reached_skills, role.recommended_skills)
-    time_penalty = normalize_value(plan.total_weeks, profile.max_weeks)
+    time_penalty = time_pressure_penalty(plan.total_weeks, profile.max_weeks)
     difficulty_penalty = min(1.0, plan.total_difficulty / max(1, len(plan.course_ids)))
 
     mc = plan.monte_carlo
