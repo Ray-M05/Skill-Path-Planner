@@ -22,7 +22,7 @@ def test_load_dataset_from_data_directory() -> None:
     assert "course_machine_learning_basic" in dataset.courses
     assert "role_ml_engineer" in dataset.roles
     assert "profile_beginner" in dataset.profiles
-    assert len(dataset.instances) == 2
+    assert len(dataset.instances) == 10
 
 
 def test_load_courses_rejects_unknown_skill(tmp_path: Path) -> None:

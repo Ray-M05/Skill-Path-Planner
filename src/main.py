@@ -19,7 +19,7 @@ from .models import Dataset, GoalSpec, PlanResult, StudentProfile
 from .planners.astar import astar_k_plans, astar_plan
 from .planners.greedy import greedy_plan
 from .planners.ucs import ucs_plan
-from .scoring import compute_final_score, rank_plans
+from .scoring import compute_score_with_breakdown, rank_plans
 from .simulation.monte_carlo import attach_monte_carlo_to_plan, evaluate_plan_monte_carlo
 from .validators import validate_plan
 
@@ -172,15 +172,17 @@ def run_planner_k(
     goal: GoalSpec,
     dataset: Dataset,
     profile: StudentProfile,
+    max_nodes: int = 0,
 ) -> list[PlanResult]:
     """Devuelve hasta k planes. Solo A* soporta k>1; otros planificadores devuelven 1 plan."""
-    if planner_name == "astar" and k > 1:
+    if planner_name == "astar":
         plans = astar_k_plans(
             profile.initial_skills,
             goal.target_skill_ids,
             dataset.courses,
             profile,
             k=k,
+            max_nodes=max_nodes,
         )
         for p in plans:
             p.planner_name = "astar"
@@ -220,7 +222,9 @@ def _enrich_plan(
 
     role = dataset.roles.get(goal.role_id)
     if role is not None and plan.valid:
-        plan.final_score = compute_final_score(plan, role, profile)
+        score, breakdown = compute_score_with_breakdown(plan, role, profile)
+        plan.final_score = score
+        plan.score_breakdown = breakdown
 
     return plan
 
@@ -293,7 +297,7 @@ def run_cli(args: argparse.Namespace) -> int:
 
     # --- Modo planificador automático ---
     k = args.k
-    plans = run_planner_k(args.planner, k, goal, dataset, validation_profile)
+    plans = run_planner_k(args.planner, k, goal, dataset, validation_profile, max_nodes=args.max_nodes)
 
     if not plans:
         print(_section(f"PLANIFICADOR {args.planner.upper()}", "No se encontro ninguna trayectoria valida."))
@@ -437,6 +441,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Imprimir fila CSV de metricas en terminal.",
+    )
+    parser.add_argument(
+        "--max-nodes",
+        type=int,
+        default=0,
+        help="Limite de nodos expandidos por A*. 0 = sin limite.",
     )
     parser.add_argument(
         "--metrics-output",

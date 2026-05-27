@@ -17,6 +17,31 @@
     "max_weeks": 40,
     "max_weekly_hours": 8,
     "risk_tolerance": 0.5
+  },
+  {
+    "id": "profile_advanced_analyst",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_python_intermediate",
+      "skill_sql_basic",
+      "skill_statistics_basic"
+    ],
+    "max_weeks": 20,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.6
+  },
+  {
+    "id": "profile_tight_time",
+    "initial_skills": ["skill_python_basic"],
+    "max_weeks": 20,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.3
+  },
+  {
+    "id": "profile_low_hours",
+    "initial_skills": ["skill_python_basic"],
+    "max_weeks": 100,
+    "max_weekly_hours": 3,
+    "risk_tolerance": 0.5
   }
 ]
-

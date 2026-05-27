@@ -49,20 +49,26 @@ def astar_plan(
     target_skills: set[str],
     courses: dict[str, Course],
     profile: StudentProfile,
+    max_nodes: int = 0,
 ) -> PlanResult:
-    plans = astar_k_plans(initial_skills, target_skills, courses, profile, k=1)
+    plans = astar_k_plans(initial_skills, target_skills, courses, profile, k=1, max_nodes=max_nodes)
     if plans:
         plans[0].planner_name = "astar"
         return plans[0]
 
     start_time = time.perf_counter()
+    msg = (
+        f"A* no encontro una trayectoria valida (limite de {max_nodes} nodos alcanzado)."
+        if max_nodes > 0
+        else "A* no encontro una trayectoria valida."
+    )
     return make_failure_result(
         "astar",
         initial_skills,
         expanded_nodes=0,
         max_frontier_size=0,
         start_time=start_time,
-        message="A* no encontro una trayectoria valida.",
+        message=msg,
     )
 
 
@@ -72,7 +78,9 @@ def astar_k_plans(
     courses: dict[str, Course],
     profile: StudentProfile,
     k: int = 3,
+    max_nodes: int = 0,
 ) -> list[PlanResult]:
+    """Genera hasta k planes con A*. max_nodes=0 significa sin limite de expansion."""
     start_time = time.perf_counter()
     initial_state = SearchState(
         skills=frozenset(initial_skills),
@@ -95,6 +103,9 @@ def astar_k_plans(
     max_frontier_size = 1
 
     while frontier and len(plans) < k:
+        if max_nodes > 0 and expanded_nodes >= max_nodes:
+            break
+
         max_frontier_size = max(max_frontier_size, len(frontier))
         _, _, state = heapq.heappop(frontier)
         state_cost = g_cost(state)

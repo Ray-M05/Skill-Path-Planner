@@ -2,14 +2,61 @@
   {
     "id": "inst_001",
     "profile_id": "profile_beginner",
-    "goal_text": "Quiero ser ingeniero de machine learning en 18 meses, se Python basico y puedo dedicar 10 horas semanales.",
+    "goal_text": "Quiero ser ingeniero de machine learning. Se Python basico y puedo dedicar 10 horas semanales.",
     "expected_role_id": "role_ml_engineer"
   },
   {
     "id": "inst_002",
-    "profile_id": "profile_data_foundation",
-    "goal_text": "Quiero trabajar como analista de datos lo mas rapido posible y puedo estudiar 8 horas semanales.",
+    "profile_id": "profile_beginner",
+    "goal_text": "Quiero trabajar como analista de datos. Se Python basico y puedo estudiar 10 horas semanales.",
     "expected_role_id": "role_data_analyst"
+  },
+  {
+    "id": "inst_003",
+    "profile_id": "profile_data_foundation",
+    "goal_text": "Quiero ser analista de datos. Ya conozco Python, SQL y estadistica basica.",
+    "expected_role_id": "role_data_analyst"
+  },
+  {
+    "id": "inst_004",
+    "profile_id": "profile_data_foundation",
+    "goal_text": "Quiero transicionarme a ingenieria de machine learning. Tengo base en datos.",
+    "expected_role_id": "role_ml_engineer"
+  },
+  {
+    "id": "inst_005",
+    "profile_id": "profile_advanced_analyst",
+    "goal_text": "Solo me falta analisis de datos para ser analista. Tengo prisa, maximo 20 semanas.",
+    "expected_role_id": "role_data_analyst"
+  },
+  {
+    "id": "inst_006",
+    "profile_id": "profile_advanced_analyst",
+    "goal_text": "Quiero llegar a machine learning engineer pero solo tengo 20 semanas disponibles.",
+    "expected_role_id": "role_ml_engineer"
+  },
+  {
+    "id": "inst_007",
+    "profile_id": "profile_tight_time",
+    "goal_text": "Necesito ser analista de datos en menos de 5 meses, se Python basico.",
+    "expected_role_id": "role_data_analyst"
+  },
+  {
+    "id": "inst_008",
+    "profile_id": "profile_tight_time",
+    "goal_text": "Quiero ser ML engineer lo mas rapido posible, tengo poco tiempo.",
+    "expected_role_id": "role_ml_engineer"
+  },
+  {
+    "id": "inst_009",
+    "profile_id": "profile_low_hours",
+    "goal_text": "Quiero ser analista de datos pero solo puedo dedicar 3 horas semanales.",
+    "expected_role_id": "role_data_analyst"
+  },
+  {
+    "id": "inst_010",
+    "profile_id": "profile_low_hours",
+    "goal_text": "Quiero ser ingeniero ML pero tengo muy pocas horas disponibles a la semana.",
+    "expected_role_id": "role_ml_engineer"
   }
 ]
-

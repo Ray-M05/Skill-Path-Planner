@@ -1,5 +1,9 @@
 {
+  "instances": "data/instances.json",
   "data_dir": "data",
-  "max_instances": 50
+  "variants": ["greedy", "ucs", "astar", "astar_mc"],
+  "monte_carlo_runs": 200,
+  "monte_carlo_seed": 42,
+  "max_nodes": 5000,
+  "output": "experiments/results/medium_results.csv"
 }
-
