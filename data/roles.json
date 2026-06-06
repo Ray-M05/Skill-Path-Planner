@@ -20,7 +20,149 @@
       "skill_sql_basic",
       "skill_data_analysis_basic"
     ],
-    "recommended_skills": ["skill_machine_learning_basic"]
+    "recommended_skills": ["skill_machine_learning_basic", "skill_data_visualization"]
+  },
+  {
+    "id": "role_data_engineer",
+    "name": "Ingeniero de datos",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_sql_basic",
+      "skill_sql_advanced",
+      "skill_data_engineering",
+      "skill_big_data",
+      "skill_docker"
+    ],
+    "recommended_skills": [
+      "skill_cloud_aws_basic",
+      "skill_devops",
+      "skill_data_warehousing"
+    ]
+  },
+  {
+    "id": "role_data_scientist",
+    "name": "Cientifico de datos",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_statistics_basic",
+      "skill_statistics_advanced",
+      "skill_sql_basic",
+      "skill_machine_learning_basic",
+      "skill_data_analysis_basic",
+      "skill_data_visualization"
+    ],
+    "recommended_skills": [
+      "skill_deep_learning_basic",
+      "skill_linear_algebra",
+      "skill_ai_ethics"
+    ]
+  },
+  {
+    "id": "role_ml_researcher",
+    "name": "Investigador en Machine Learning",
+    "required_skills": [
+      "skill_python_advanced",
+      "skill_linear_algebra",
+      "skill_calculus",
+      "skill_statistics_advanced",
+      "skill_machine_learning_advanced",
+      "skill_deep_learning_advanced",
+      "skill_reinforcement_learning"
+    ],
+    "recommended_skills": ["skill_nlp", "skill_computer_vision", "skill_generative_ai"]
+  },
+  {
+    "id": "role_nlp_engineer",
+    "name": "Ingeniero de NLP",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_machine_learning_basic",
+      "skill_deep_learning_basic",
+      "skill_nlp",
+      "skill_llm_engineering"
+    ],
+    "recommended_skills": ["skill_generative_ai", "skill_mlops_basic"]
+  },
+  {
+    "id": "role_computer_vision_engineer",
+    "name": "Ingeniero de vision por computadora",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_machine_learning_basic",
+      "skill_deep_learning_basic",
+      "skill_computer_vision",
+      "skill_linear_algebra"
+    ],
+    "recommended_skills": ["skill_mlops_basic", "skill_deep_learning_advanced"]
+  },
+  {
+    "id": "role_mlops_engineer",
+    "name": "Ingeniero de MLOps",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_machine_learning_basic",
+      "skill_mlops_basic",
+      "skill_mlops_advanced",
+      "skill_docker",
+      "skill_kubernetes",
+      "skill_devops"
+    ],
+    "recommended_skills": ["skill_cloud_aws_basic", "skill_cybersecurity_basic"]
+  },
+  {
+    "id": "role_ai_product_manager",
+    "name": "Product Manager de IA",
+    "required_skills": [
+      "skill_product_management_basic",
+      "skill_ai_ethics",
+      "skill_machine_learning_basic",
+      "skill_data_analysis_basic",
+      "skill_sql_basic"
+    ],
+    "recommended_skills": [
+      "skill_python_intermediate",
+      "skill_statistics_basic",
+      "skill_data_visualization"
+    ]
+  },
+  {
+    "id": "role_full_stack_developer",
+    "name": "Desarrollador Full Stack",
+    "required_skills": [
+      "skill_html_css",
+      "skill_javascript_basic",
+      "skill_react_basic",
+      "skill_python_intermediate",
+      "skill_sql_basic",
+      "skill_backend_apis",
+      "skill_git_basics"
+    ],
+    "recommended_skills": ["skill_testing", "skill_docker"]
+  },
+  {
+    "id": "role_backend_engineer",
+    "name": "Ingeniero backend",
+    "required_skills": [
+      "skill_python_intermediate",
+      "skill_python_advanced",
+      "skill_sql_basic",
+      "skill_backend_apis",
+      "skill_git_basics",
+      "skill_testing",
+      "skill_software_architecture"
+    ],
+    "recommended_skills": ["skill_docker", "skill_microservices", "skill_cybersecurity_basic"]
+  },
+  {
+    "id": "role_devops_engineer",
+    "name": "Ingeniero DevOps",
+    "required_skills": [
+      "skill_git_basics",
+      "skill_docker",
+      "skill_kubernetes",
+      "skill_devops",
+      "skill_cloud_aws_basic"
+    ],
+    "recommended_skills": ["skill_cybersecurity_basic", "skill_microservices"]
   }
 ]
-

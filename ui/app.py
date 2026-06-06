@@ -17,27 +17,93 @@ from src.llm.prompts import GOAL_INTERPRETER_SYSTEM_PROMPT, build_goal_interpret
 from src.main import _enrich_plan, build_mock_goal_response, build_profile_from_goal, run_planner_k
 from src.metrics import extract_metrics_row, rows_to_csv_string
 from src.scoring import rank_plans
+from ui.graph_view import build_course_graph_figure, build_course_table_markdown
 
 DATASET = load_dataset("data")
 
-EXAMPLES = [
-    "Sé Python básico y quiero ser data analyst en máximo 30 semanas, 8 horas por semana",
-    "Conozco Python básico y estadística básica, quiero ser ML engineer, tengo 12 horas semanales",
-    "No sé nada, quiero ser analista de datos en 6 meses a ritmo lento y cursos fáciles",
-    "Sé SQL básico y Python intermedio, quiero ser data analyst lo más rápido posible",
-    "Quiero trabajar con machine learning, tengo algo de python, máximo 40 semanas y 10 horas semanales",
+EXAMPLE_CHIPS = [
+    ("Convertirme en Data Analyst", "Sé Python básico y quiero ser data analyst en máximo 30 semanas, 8 horas por semana"),
+    ("Transición a ML Engineer",    "Conozco Python básico y estadística básica, quiero ser ML engineer, tengo 12 horas semanales"),
+    ("Carrera en Deep Learning",    "Sé Python intermedio y estadística básica, quiero especializarme en deep learning en 30 semanas"),
+    ("Especialista en MLOps",       "Sé Python y ML básico, quiero ser especialista en MLOps, tengo 15 horas semanales"),
+    ("Estadística para DS",         "No sé nada, quiero ser analista de datos en 6 meses a ritmo lento y cursos fáciles"),
 ]
 
 THEME = gr.themes.Soft(
-    primary_hue="indigo",
-    secondary_hue="slate",
-    neutral_hue="slate",
+    primary_hue="amber",
+    secondary_hue="amber",
+    neutral_hue="stone",
+    radius_size="lg",
     font=gr.themes.GoogleFont("Inter"),
+).set(
+    # Fondos
+    body_background_fill="#F4EDE0",
+    block_background_fill="#EDE7D8",
+    body_background_fill_dark="#2C2010",
+    block_background_fill_dark="#1E180C",
+    # Bordes de bloque invisibles (Group sin borde visible)
+    block_border_color="#EDE7D8",
+    block_border_width="1px",
+    # Texto
+    body_text_color="#2C1E0E",
+    block_label_text_color="#7A6040",
+    block_title_text_color="#2C1E0E",
+    # Inputs
+    input_background_fill="#EDE7D8",
+    input_border_color="#C8BCA8",
+    input_border_color_focus="#C5811E",
+    input_placeholder_color="#B0A088",
+    # Botón primario — ámbar cálido
+    button_primary_background_fill="#C5811E",
+    button_primary_background_fill_hover="#A96D18",
+    button_primary_text_color="white",
+    button_primary_border_color="#C5811E",
+    # Botones secundarios — chips tan claro
+    button_secondary_background_fill="#E4DAC8",
+    button_secondary_background_fill_hover="#D9D0BC",
+    button_secondary_border_color="#C8BCA8",
+    button_secondary_text_color="#3D2B10",
+    # Slider y acento
+    slider_color="#C5811E",
+    color_accent="#C5811E",
+    color_accent_soft="#E4DAC8",
+    # Tablas
+    table_even_background_fill="#EDE7D8",
+    table_odd_background_fill="#E8E2D6",
+    table_border_color="#C8BCA8",
+    # Loader
+    loader_color="#C5811E",
 )
 
 
 def _fmt_json(obj: dict) -> str:
     return json.dumps(obj, ensure_ascii=False, indent=2)
+
+
+def _fmt_score_md(best) -> str:
+    if not best.score_breakdown:
+        return "_Score breakdown no disponible (plan inválido)._"
+    bd = best.score_breakdown
+    sig = bd.get("signals", {})
+    lines = [
+        f"**Puntuación final: {best.final_score}**",
+        "",
+        "| | |",
+        "|:---|---:|",
+        f"| Requisitos cubiertos | **{bd['required']:.0%}** |",
+        f"| Recomendados cubiertos | **{bd['recommended']:.0%}** |",
+        f"| Penalización de tiempo | **{bd['time_penalty']:.2f}** |",
+        f"| Penalización de dificultad | **{bd['difficulty_penalty']:.2f}** |",
+        f"| Éxito Monte Carlo | **{bd['mc_success']:.2f}** |",
+        f"| Calidad LLM | **{bd['llm_quality']:.2f}** |",
+        "",
+        (
+            f"`Monte Carlo {'✅' if sig.get('has_mc') else '❌'}` "
+            f"`Eval LLM {'✅' if sig.get('has_llm') else '❌'}` "
+            f"`Peso (w): {sig.get('w_required', 0)}`"
+        ),
+    ]
+    return "\n".join(lines)
 
 
 def run_pipeline(
@@ -50,7 +116,6 @@ def run_pipeline(
     use_evaluate: bool,
     max_nodes: int,
 ) -> tuple[str, str, str, str, str]:
-    """Ejecuta el pipeline completo y devuelve 5 outputs para los tabs."""
     if not query.strip():
         empty = "— Escribe una consulta y presiona Generar plan —"
         return empty, empty, empty, empty, empty
@@ -59,7 +124,6 @@ def run_pipeline(
         settings = load_settings()
         real_provider = provider.lower()
 
-        # --- Interpretación del goal ---
         user_prompt = build_goal_interpreter_user_prompt(query, DATASET)
         if real_provider == "mock":
             raw = build_mock_goal_response(query, DATASET)
@@ -79,7 +143,6 @@ def run_pipeline(
         goal = validate_goal_spec(raw, DATASET)
         profile = build_profile_from_goal(goal)
 
-        # --- Planificador ---
         monte_carlo_runs = mc_runs if use_monte_carlo else 0
         plans = run_planner_k(planner, k_plans, goal, DATASET, profile, max_nodes=max_nodes)
 
@@ -91,80 +154,54 @@ def run_pipeline(
         for plan in plans:
             enriched.append(
                 _enrich_plan(
-                    plan,
-                    goal,
-                    DATASET,
-                    profile,
-                    real_provider,
-                    settings,
-                    monte_carlo_runs,
-                    42,
-                    use_evaluate,
+                    plan, goal, DATASET, profile,
+                    real_provider, settings, monte_carlo_runs, 42, use_evaluate,
                 )
             )
 
         ranked = rank_plans(enriched)
         best = ranked[0]
-        best_dict = asdict(best)
 
-        # --- Tab 1: Plan completo ---
-        plan_out = _fmt_json(best_dict)
+        # Tab 1: Plan
+        plan_out = _fmt_json(asdict(best))
 
-        # --- Tab 2: Score breakdown ---
-        if best.score_breakdown:
-            bd = best.score_breakdown
-            sig = bd.get("signals", {})
-            breakdown_lines = [
-                f"**Score final: {best.final_score}**\n",
-                f"| Componente | Valor |",
-                f"|---|---|",
-                f"| Requeridas cubiertas | `{bd['required']:+.4f}` |",
-                f"| Recomendadas cubiertas | `{bd['recommended']:+.4f}` |",
-                f"| Penalización tiempo | `{bd['time_penalty']:+.4f}` |",
-                f"| Penalización dificultad | `{bd['difficulty_penalty']:+.4f}` |",
-                f"| Éxito Monte Carlo | `{bd['mc_success']:+.4f}` |",
-                f"| Calidad LLM | `{bd['llm_quality']:+.4f}` |",
-                f"\n**Señales activas**",
-                f"- Monte Carlo: {'✅' if sig.get('has_mc') else '❌'}",
-                f"- Evaluación LLM: {'✅' if sig.get('has_llm') else '❌'}",
-                f"- Peso requeridas (w): `{sig.get('w_required', 0)}`",
-            ]
-            score_out = "\n".join(breakdown_lines)
-        else:
-            score_out = "Score breakdown no disponible (plan inválido)."
+        # Tab 2: Puntuación
+        score_out = _fmt_score_md(best)
 
-        # --- Tab 3: Monte Carlo ---
+        # Tab 3: Monte Carlo
         mc = best.monte_carlo
         if mc and not mc.get("skipped"):
             mc_lines = [
-                f"**Simulación con {mc.get('runs', 0)} corridas**\n",
-                f"| Métrica | Valor |",
-                f"|---|---|",
-                f"| Probabilidad de éxito | `{mc['success_probability']:.1%}` |",
+                f"**Simulación con {mc.get('runs', 0)} corridas**",
+                "",
+                "| Métrica | Valor |",
+                "|:---|---:|",
+                f"| Probabilidad de éxito | **{mc['success_probability']:.1%}** |",
                 f"| IC 95% | `[{mc['success_ci_95'][0]:.1%}, {mc['success_ci_95'][1]:.1%}]` |",
-                f"| Riesgo | `{mc['risk_score']:.4f}` |",
-                f"| Semanas esperadas | `{mc['expected_weeks']:.1f}` |",
-                f"| Semanas P10 / P50 / P90 | `{mc['weeks_p10']:.1f}` / `{mc['weeks_p50']:.1f}` / `{mc['weeks_p90']:.1f}` |",
-                f"| Cursos fallidos esperados | `{mc['expected_failed_courses']:.2f}` |",
+                f"| Riesgo | **{mc['risk_score']:.4f}** |",
+                f"| Semanas esperadas | **{mc['expected_weeks']:.1f}** |",
+                f"| P10 / P50 / P90 | `{mc['weeks_p10']:.1f}` / `{mc['weeks_p50']:.1f}` / `{mc['weeks_p90']:.1f}` |",
+                f"| Cursos fallidos esperados | **{mc['expected_failed_courses']:.2f}** |",
             ]
             mc_out = "\n".join(mc_lines)
         else:
             mc_out = "Monte Carlo no activado. Marca **Simulación Monte Carlo** y elige el número de corridas."
 
-        # --- Tab 4: Evaluación LLM ---
+        # Tab 4: Evaluación
         llm = best.llm_evaluation
         if llm and not llm.get("skipped"):
             strengths = "\n".join(f"- {s}" for s in llm.get("main_strengths", []))
             weaknesses = "\n".join(f"- {w}" for w in llm.get("main_weaknesses", []))
             llm_lines = [
-                f"**Calidad global: {llm['global_quality']:.0%}**\n",
-                f"| Dimensión | Puntuación |",
-                f"|---|---|",
-                f"| Alineación con el rol | `{llm['goal_alignment']:.0%}` |",
-                f"| Coherencia pedagógica | `{llm['pedagogical_coherence']:.0%}` |",
-                f"| Realismo de perfil | `{llm['profile_realism']:.0%}` |",
-                f"| No redundancia | `{llm['non_redundancy']:.0%}` |",
-                f"| Valor profesional | `{llm['professional_value']:.0%}` |",
+                f"**Calidad global: {llm['global_quality']:.0%}**",
+                "",
+                "| Dimensión | Puntuación |",
+                "|:---|---:|",
+                f"| Alineación con el rol | **{llm['goal_alignment']:.0%}** |",
+                f"| Coherencia pedagógica | **{llm['pedagogical_coherence']:.0%}** |",
+                f"| Realismo de perfil | **{llm['profile_realism']:.0%}** |",
+                f"| No redundancia | **{llm['non_redundancy']:.0%}** |",
+                f"| Valor profesional | **{llm['professional_value']:.0%}** |",
                 f"\n**Fortalezas**\n{strengths}",
                 f"\n**Debilidades**\n{weaknesses}",
                 f"\n**Justificación**\n{llm.get('justification', '')}",
@@ -173,12 +210,17 @@ def run_pipeline(
         else:
             llm_out = "Evaluación LLM no activada. Marca **Evaluar con LLM** para obtener análisis cualitativo."
 
-        # --- Tab 5: Ranking (si k > 1) ---
+        # Tab 5: Ranking
         if len(ranked) > 1:
-            ranking_lines = [f"**Top {len(ranked)} planes encontrados**\n", "| Rank | Cursos | Semanas | Score |", "|---|---|---|---|"]
+            ranking_lines = [
+                f"**Top {len(ranked)} planes encontrados**",
+                "",
+                "| Rank | Cursos | Semanas | Score |",
+                "|:---:|:---|:---:|:---:|",
+            ]
             for i, p in enumerate(ranked):
                 courses_str = " → ".join(p.course_ids)
-                score_str = f"`{p.final_score}`" if p.final_score is not None else "n/a"
+                score_str = f"**{p.final_score}**" if p.final_score is not None else "n/a"
                 ranking_lines.append(f"| {i+1} | {courses_str} | {p.total_weeks} | {score_str} |")
             ranking_out = "\n".join(ranking_lines)
         else:
@@ -192,119 +234,140 @@ def run_pipeline(
 
 
 def build_ui() -> gr.Blocks:
-    with gr.Blocks(title="Skill Path Planner") as demo:
+    with gr.Blocks(title="Skill Path Planner", theme=THEME) as demo:
 
-        gr.Markdown(
-            """
-# 🎓 Skill Path Planner
-**Planificador inteligente de trayectorias profesionales**
-Describe tu situación actual y tu meta en lenguaje natural. El sistema encontrará la secuencia óptima de cursos.
-"""
-        )
+        gr.Markdown("# Skill Path Planner\n**Planificador inteligente de trayectorias**")
 
-        with gr.Row():
-            # --- Columna izquierda: inputs ---
-            with gr.Column(scale=2):
-                query = gr.Textbox(
-                    label="¿Qué quieres aprender o en qué quieres trabajar?",
-                    placeholder=(
-                        "Ejemplos:\n"
-                        "• Sé Python básico y quiero ser data analyst en 30 semanas\n"
-                        "• Quiero ser ML engineer, tengo 10 horas por semana\n"
-                        "• No sé nada, quiero trabajar con datos, cursos fáciles"
-                    ),
-                    lines=4,
-                    max_lines=6,
+        with gr.Tabs():
+            with gr.Tab("🧭 Planificador"):
+                with gr.Row():
+                    # Columna izquierda
+                    with gr.Column(scale=2):
+                        query = gr.Textbox(
+                            show_label=False,
+                            placeholder=(
+                                "• Quiero hacer la transición de analista de datos a ingeniero de ML\n"
+                                "• Ayúdame a convertirme en especialista en deep learning\n"
+                                "• Crea un camino para dominar estadística para ciencia de datos"
+                            ),
+                            lines=4,
+                            max_lines=6,
+                        )
+
+                        with gr.Row():
+                            chip1 = gr.Button("Convertirme en Data Analyst", variant="secondary", size="sm")
+                            chip2 = gr.Button("Transición a ML Engineer",    variant="secondary", size="sm")
+                            chip3 = gr.Button("Carrera en Deep Learning",    variant="secondary", size="sm")
+                        with gr.Row():
+                            chip4 = gr.Button("Especialista en MLOps",       variant="secondary", size="sm")
+                            chip5 = gr.Button("Estadística para DS",         variant="secondary", size="sm")
+
+                        with gr.Group():
+                            gr.Markdown("##### ⚙ CONFIGURATION")
+
+                            with gr.Row():
+                                provider = gr.Radio(
+                                    choices=["Mock", "Gemini"],
+                                    value="Mock",
+                                    label="Proveedor LLM",
+                                    info="Mock: sin API key. Gemini: requiere GEMINI_API_KEY en .env",
+                                )
+                                planner = gr.Radio(
+                                    choices=[("A*", "astar"), ("Greedy", "greedy"), ("UCS", "ucs")],
+                                    value="astar",
+                                    label="Algoritmo",
+                                    info="A* recomendado. Greedy/UCS más rápidos pero subóptimos.",
+                                )
+
+                            k_plans = gr.Slider(
+                                minimum=1, maximum=3, step=1, value=1,
+                                label="Planes alternativos (K)",
+                                info="Solo A* genera múltiples alternativas",
+                            )
+                            max_nodes = gr.Number(
+                                value=0, minimum=0, step=500,
+                                label="Límite de nodos A*",
+                                info="0 = sin límite. Reduce para búsquedas más rápidas.",
+                            )
+
+                            with gr.Row():
+                                use_monte_carlo = gr.Checkbox(
+                                    label="Simulación Monte Carlo",
+                                    value=False,
+                                    info="Estima probabilidad de éxito del plan",
+                                )
+                                mc_runs = gr.Slider(
+                                    minimum=50, maximum=500, step=50, value=200,
+                                    label="Corridas Monte Carlo",
+                                    visible=False,
+                                )
+
+                            use_evaluate = gr.Checkbox(
+                                label="Evaluar con LLM",
+                                value=False,
+                                info="Análisis cualitativo del plan (consume 1 llamada extra a la API)",
+                            )
+
+                        run_btn = gr.Button("✨ Generar plan", variant="primary", size="lg")
+
+                    # Columna derecha
+                    with gr.Column(scale=3):
+                        gr.Markdown("### 📊 Resultados")
+                        with gr.Tabs():
+                            with gr.Tab("Plan"):
+                                plan_out = gr.Code(label="Plan generado", language="json", lines=30)
+                            with gr.Tab("Puntuación"):
+                                score_out = gr.Markdown(
+                                    value="— Ejecuta una consulta para ver el desglose de puntuación —"
+                                )
+                            with gr.Tab("Monte Carlo"):
+                                mc_out = gr.Markdown(
+                                    value="— Activa Monte Carlo para ver la simulación de riesgo —"
+                                )
+                            with gr.Tab("Evaluación"):
+                                llm_out = gr.Markdown(
+                                    value="— Activa 'Evaluar con LLM' para ver el análisis cualitativo —"
+                                )
+                            with gr.Tab("Ranking"):
+                                ranking_out = gr.Markdown(
+                                    value="— Usa K > 1 con A* para ver planes alternativos —"
+                                )
+
+                        gr.Markdown(
+                            "**Roles disponibles:** Analista de Datos · Ingeniero ML  \n"
+                            "**Habilidades:** Python · SQL · Estadística · ML · Deep Learning · MLOps"
+                        )
+
+            with gr.Tab("🗺 Mapa de cursos"):
+                gr.Markdown(
+                    "### Grafo de precedencia de cursos\n"
+                    "Cada nodo es un curso; las flechas indican que la habilidad de salida del "
+                    "curso origen es prerrequisito del curso destino. Los chips muestran si la "
+                    "habilidad producida es **requerida (✓)** o **recomendada (○)** para cada rol."
                 )
-
-                gr.Examples(
-                    examples=[[e] for e in EXAMPLES],
-                    inputs=[query],
-                    label="💡 Sugerencias de consulta",
-                    examples_per_page=5,
-                )
-
-                with gr.Group():
-                    gr.Markdown("### ⚙️ Configuración del planificador")
-
-                    with gr.Row():
-                        provider = gr.Radio(
-                            choices=["Mock", "Gemini"],
-                            value="Mock",
-                            label="Proveedor LLM",
-                            info="Mock: sin API key. Gemini: requiere GEMINI_API_KEY en .env",
-                        )
-                        planner = gr.Radio(
-                            choices=["astar", "greedy", "ucs"],
-                            value="astar",
-                            label="Algoritmo planificador",
-                            info="A* recomendado. Greedy/UCS más rápidos pero subóptimos.",
-                        )
-
-                    with gr.Row():
-                        k_plans = gr.Slider(
-                            minimum=1, maximum=3, step=1, value=1,
-                            label="K planes alternativos",
-                            info="Solo A* genera múltiples alternativas",
-                        )
-                        max_nodes = gr.Number(
-                            value=0, minimum=0, step=500,
-                            label="Límite de nodos A*",
-                            info="0 = sin límite. Reduce para búsquedas más rápidas.",
-                        )
-
-                    with gr.Row():
-                        use_monte_carlo = gr.Checkbox(
-                            label="Simulación Monte Carlo",
-                            value=False,
-                            info="Estima probabilidad de éxito del plan",
-                        )
-                        mc_runs = gr.Slider(
-                            minimum=50, maximum=500, step=50, value=200,
-                            label="Corridas Monte Carlo",
-                            visible=False,
-                        )
-
-                    use_evaluate = gr.Checkbox(
-                        label="Evaluar plan con LLM",
-                        value=False,
-                        info="Análisis cualitativo del plan (consume 1 llamada extra a la API)",
+                with gr.Row():
+                    refresh_graph_btn = gr.Button(
+                        "🔄 Recargar desde la base de datos", variant="primary", size="sm"
                     )
+                graph_plot = gr.Plot(value=build_course_graph_figure("data"), show_label=False)
+                with gr.Accordion("Tabla detallada de cursos", open=False):
+                    courses_table = gr.Markdown(value=build_course_table_markdown("data"))
 
-                use_monte_carlo.change(
-                    fn=lambda v: gr.update(visible=v),
-                    inputs=use_monte_carlo,
-                    outputs=mc_runs,
+                def _reload_graph() -> tuple:
+                    return build_course_graph_figure("data"), build_course_table_markdown("data")
+
+                refresh_graph_btn.click(
+                    fn=_reload_graph,
+                    inputs=None,
+                    outputs=[graph_plot, courses_table],
                 )
 
-                run_btn = gr.Button("🚀 Generar plan", variant="primary", size="lg")
-
-            # --- Columna derecha: outputs ---
-            with gr.Column(scale=3):
-                gr.Markdown("### 📊 Resultados")
-                with gr.Tabs():
-                    with gr.Tab("Plan"):
-                        plan_out = gr.Code(
-                            label="Plan generado",
-                            language="json",
-                            lines=30,
-                        )
-                    with gr.Tab("Score"):
-                        score_out = gr.Markdown(
-                            value="— Ejecuta una consulta para ver el desglose de score —"
-                        )
-                    with gr.Tab("Monte Carlo"):
-                        mc_out = gr.Markdown(
-                            value="— Activa Monte Carlo para ver la simulación de riesgo —"
-                        )
-                    with gr.Tab("Evaluación LLM"):
-                        llm_out = gr.Markdown(
-                            value="— Activa 'Evaluar con LLM' para ver el análisis cualitativo —"
-                        )
-                    with gr.Tab("Ranking"):
-                        ranking_out = gr.Markdown(
-                            value="— Usa K > 1 con A* para ver planes alternativos —"
-                        )
+        # Event wiring
+        use_monte_carlo.change(
+            fn=lambda v: gr.update(visible=v),
+            inputs=use_monte_carlo,
+            outputs=mc_runs,
+        )
 
         run_btn.click(
             fn=run_pipeline,
@@ -312,17 +375,12 @@ Describe tu situación actual y tu meta en lenguaje natural. El sistema encontra
             outputs=[plan_out, score_out, mc_out, llm_out, ranking_out],
         )
 
-        gr.Markdown(
-            """
----
-**Roles disponibles:** Analista de datos · Ingeniero de Machine Learning
-**Habilidades:** Python básico/intermedio · SQL · Estadística · Análisis de datos · ML · Deep Learning · MLOps
-"""
-        )
+        for chip, (_, full_text) in zip([chip1, chip2, chip3, chip4, chip5], EXAMPLE_CHIPS):
+            chip.click(fn=lambda t=full_text: t, outputs=query)
 
     return demo
 
 
 if __name__ == "__main__":
     app = build_ui()
-    app.launch(inbrowser=True, theme=THEME)
+    app.launch(inbrowser=True)

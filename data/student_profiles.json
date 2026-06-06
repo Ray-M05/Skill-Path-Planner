@@ -43,5 +43,121 @@
     "max_weeks": 100,
     "max_weekly_hours": 3,
     "risk_tolerance": 0.5
+  },
+  {
+    "id": "profile_career_changer",
+    "initial_skills": [],
+    "max_weeks": 80,
+    "max_weekly_hours": 8,
+    "risk_tolerance": 0.35
+  },
+  {
+    "id": "profile_cs_student",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_python_intermediate",
+      "skill_git_basics",
+      "skill_linear_algebra"
+    ],
+    "max_weeks": 60,
+    "max_weekly_hours": 12,
+    "risk_tolerance": 0.7
+  },
+  {
+    "id": "profile_backend_developer",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_python_intermediate",
+      "skill_python_advanced",
+      "skill_sql_basic",
+      "skill_git_basics",
+      "skill_backend_apis",
+      "skill_testing"
+    ],
+    "max_weeks": 30,
+    "max_weekly_hours": 8,
+    "risk_tolerance": 0.6
+  },
+  {
+    "id": "profile_web_developer",
+    "initial_skills": [
+      "skill_html_css",
+      "skill_javascript_basic",
+      "skill_react_basic",
+      "skill_git_basics"
+    ],
+    "max_weeks": 50,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.5
+  },
+  {
+    "id": "profile_devops_savvy",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_git_basics",
+      "skill_docker",
+      "skill_kubernetes",
+      "skill_cloud_aws_basic",
+      "skill_devops"
+    ],
+    "max_weeks": 40,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.6
+  },
+  {
+    "id": "profile_math_background",
+    "initial_skills": [
+      "skill_linear_algebra",
+      "skill_calculus",
+      "skill_statistics_basic",
+      "skill_statistics_advanced"
+    ],
+    "max_weeks": 60,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.6
+  },
+  {
+    "id": "profile_intensive_bootcamp",
+    "initial_skills": ["skill_python_basic"],
+    "max_weeks": 16,
+    "max_weekly_hours": 40,
+    "risk_tolerance": 0.7
+  },
+  {
+    "id": "profile_evening_learner",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_python_intermediate",
+      "skill_sql_basic"
+    ],
+    "max_weeks": 80,
+    "max_weekly_hours": 6,
+    "risk_tolerance": 0.4
+  },
+  {
+    "id": "profile_ml_basics_done",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_python_intermediate",
+      "skill_statistics_basic",
+      "skill_machine_learning_basic"
+    ],
+    "max_weeks": 40,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.6
+  },
+  {
+    "id": "profile_data_savvy",
+    "initial_skills": [
+      "skill_python_basic",
+      "skill_python_intermediate",
+      "skill_sql_basic",
+      "skill_sql_advanced",
+      "skill_data_analysis_basic",
+      "skill_statistics_basic"
+    ],
+    "max_weeks": 30,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.6
   }
 ]

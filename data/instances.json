@@ -58,5 +58,113 @@
     "profile_id": "profile_low_hours",
     "goal_text": "Quiero ser ingeniero ML pero tengo muy pocas horas disponibles a la semana.",
     "expected_role_id": "role_ml_engineer"
+  },
+  {
+    "id": "inst_011",
+    "profile_id": "profile_career_changer",
+    "goal_text": "Vengo de otra industria sin experiencia tecnica. Quiero ser analista de datos en 18 meses con 8 horas semanales.",
+    "expected_role_id": "role_data_analyst"
+  },
+  {
+    "id": "inst_012",
+    "profile_id": "profile_career_changer",
+    "goal_text": "Quiero hacer un cambio de carrera a desarrollo full stack, no se programar todavia.",
+    "expected_role_id": "role_full_stack_developer"
+  },
+  {
+    "id": "inst_013",
+    "profile_id": "profile_cs_student",
+    "goal_text": "Soy estudiante de computacion y quiero ser investigador en machine learning. Tengo bases de Python y matematicas.",
+    "expected_role_id": "role_ml_researcher"
+  },
+  {
+    "id": "inst_014",
+    "profile_id": "profile_cs_student",
+    "goal_text": "Estudio computacion y quiero convertirme en cientifico de datos.",
+    "expected_role_id": "role_data_scientist"
+  },
+  {
+    "id": "inst_015",
+    "profile_id": "profile_backend_developer",
+    "goal_text": "Soy desarrollador backend en Python y quiero crecer como ingeniero backend con mejor arquitectura.",
+    "expected_role_id": "role_backend_engineer"
+  },
+  {
+    "id": "inst_016",
+    "profile_id": "profile_backend_developer",
+    "goal_text": "Trabajo en backend y quiero transicionarme a ingenieria de machine learning.",
+    "expected_role_id": "role_ml_engineer"
+  },
+  {
+    "id": "inst_017",
+    "profile_id": "profile_web_developer",
+    "goal_text": "Hago frontend con React y quiero ser desarrollador full stack agregando Python y bases de datos.",
+    "expected_role_id": "role_full_stack_developer"
+  },
+  {
+    "id": "inst_018",
+    "profile_id": "profile_devops_savvy",
+    "goal_text": "Trabajo en DevOps y quiero especializarme en MLOps para desplegar modelos en produccion.",
+    "expected_role_id": "role_mlops_engineer"
+  },
+  {
+    "id": "inst_019",
+    "profile_id": "profile_devops_savvy",
+    "goal_text": "Soy DevOps y quiero consolidarme como ingeniero DevOps senior con foco en cloud.",
+    "expected_role_id": "role_devops_engineer"
+  },
+  {
+    "id": "inst_020",
+    "profile_id": "profile_math_background",
+    "goal_text": "Tengo background en matematicas y estadistica y quiero ser cientifico de datos.",
+    "expected_role_id": "role_data_scientist"
+  },
+  {
+    "id": "inst_021",
+    "profile_id": "profile_math_background",
+    "goal_text": "Vengo de matematicas y quiero entrar a investigacion en machine learning.",
+    "expected_role_id": "role_ml_researcher"
+  },
+  {
+    "id": "inst_022",
+    "profile_id": "profile_intensive_bootcamp",
+    "goal_text": "Estoy en bootcamp intensivo de 16 semanas a 40 horas, quiero ser ingeniero de datos.",
+    "expected_role_id": "role_data_engineer"
+  },
+  {
+    "id": "inst_023",
+    "profile_id": "profile_evening_learner",
+    "goal_text": "Estudio solo de noche con 6 horas semanales y quiero ser ingeniero de datos a largo plazo.",
+    "expected_role_id": "role_data_engineer"
+  },
+  {
+    "id": "inst_024",
+    "profile_id": "profile_ml_basics_done",
+    "goal_text": "Ya conozco machine learning basico y quiero especializarme en procesamiento de lenguaje natural.",
+    "expected_role_id": "role_nlp_engineer"
+  },
+  {
+    "id": "inst_025",
+    "profile_id": "profile_ml_basics_done",
+    "goal_text": "Tengo ML basico y quiero ser ingeniero de vision por computadora.",
+    "expected_role_id": "role_computer_vision_engineer"
+  },
+  {
+    "id": "inst_026",
+    "profile_id": "profile_data_savvy",
+    "goal_text": "Soy analista con base solida en SQL avanzado y quiero ser ingeniero de datos.",
+    "expected_role_id": "role_data_engineer"
+  },
+  {
+    "id": "inst_027",
+    "profile_id": "profile_data_savvy",
+    "goal_text": "Tengo base solida en datos y analisis y quiero convertirme en cientifico de datos.",
+    "expected_role_id": "role_data_scientist"
+  },
+  {
+    "id": "inst_028",
+    "profile_id": "profile_data_foundation",
+    "goal_text": "Vengo del analisis de datos y quiero ser product manager de IA combinando producto con ML.",
+    "expected_role_id": "role_ai_product_manager"
   }
 ]

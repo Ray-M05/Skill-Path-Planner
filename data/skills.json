@@ -46,6 +46,197 @@
     "name": "MLOps basico",
     "aliases": ["mlops", "operaciones de machine learning"],
     "category": "engineering"
+  },
+  {
+    "id": "skill_python_advanced",
+    "name": "Python avanzado",
+    "aliases": ["python avanzado", "python pro", "programacion python avanzada"],
+    "category": "programming"
+  },
+  {
+    "id": "skill_git_basics",
+    "name": "Git y control de versiones",
+    "aliases": ["git", "control de versiones", "github basico"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_sql_advanced",
+    "name": "SQL avanzado",
+    "aliases": ["sql avanzado", "consultas avanzadas", "ventana sql"],
+    "category": "data"
+  },
+  {
+    "id": "skill_data_visualization",
+    "name": "Visualizacion de datos",
+    "aliases": ["visualizacion", "data viz", "graficos de datos"],
+    "category": "data"
+  },
+  {
+    "id": "skill_statistics_advanced",
+    "name": "Estadistica avanzada",
+    "aliases": ["estadistica avanzada", "estadistica inferencial", "estadistica bayesiana"],
+    "category": "math"
+  },
+  {
+    "id": "skill_linear_algebra",
+    "name": "Algebra lineal",
+    "aliases": ["algebra lineal", "matrices", "vectores"],
+    "category": "math"
+  },
+  {
+    "id": "skill_calculus",
+    "name": "Calculo diferencial e integral",
+    "aliases": ["calculo", "derivadas e integrales", "calculo multivariable"],
+    "category": "math"
+  },
+  {
+    "id": "skill_machine_learning_advanced",
+    "name": "Machine learning avanzado",
+    "aliases": ["ml avanzado", "aprendizaje automatico avanzado", "ensembles"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_deep_learning_advanced",
+    "name": "Deep learning avanzado",
+    "aliases": ["deep learning avanzado", "redes neuronales avanzadas", "transformers"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_nlp",
+    "name": "Procesamiento de lenguaje natural",
+    "aliases": ["nlp", "procesamiento de lenguaje natural", "lenguaje natural"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_computer_vision",
+    "name": "Vision por computadora",
+    "aliases": ["vision por computadora", "vision computacional", "computer vision"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_reinforcement_learning",
+    "name": "Aprendizaje por refuerzo",
+    "aliases": ["aprendizaje por refuerzo", "reinforcement learning", "rl"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_generative_ai",
+    "name": "IA generativa",
+    "aliases": ["ia generativa", "generative ai", "modelos generativos"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_llm_engineering",
+    "name": "Ingenieria de LLMs",
+    "aliases": ["llm engineering", "ingenieria de prompts", "rag", "fine tuning"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_data_engineering",
+    "name": "Ingenieria de datos",
+    "aliases": ["data engineering", "ingenieria de datos", "etl"],
+    "category": "data"
+  },
+  {
+    "id": "skill_big_data",
+    "name": "Big data",
+    "aliases": ["big data", "datos masivos", "spark"],
+    "category": "data"
+  },
+  {
+    "id": "skill_data_warehousing",
+    "name": "Data warehousing",
+    "aliases": ["data warehouse", "almacenamiento de datos", "olap"],
+    "category": "data"
+  },
+  {
+    "id": "skill_docker",
+    "name": "Docker y contenedores",
+    "aliases": ["docker", "contenedores", "containerizacion"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_kubernetes",
+    "name": "Kubernetes",
+    "aliases": ["kubernetes", "k8s", "orquestacion de contenedores"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_cloud_aws_basic",
+    "name": "Cloud AWS basico",
+    "aliases": ["aws", "cloud aws", "amazon web services"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_devops",
+    "name": "DevOps y CI/CD",
+    "aliases": ["devops", "ci cd", "integracion continua"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_mlops_advanced",
+    "name": "MLOps avanzado",
+    "aliases": ["mlops avanzado", "deployment ml", "pipelines de ml"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_html_css",
+    "name": "HTML y CSS",
+    "aliases": ["html", "css", "html css", "maquetacion web"],
+    "category": "programming"
+  },
+  {
+    "id": "skill_javascript_basic",
+    "name": "JavaScript basico",
+    "aliases": ["javascript", "js basico", "programacion js"],
+    "category": "programming"
+  },
+  {
+    "id": "skill_react_basic",
+    "name": "React basico",
+    "aliases": ["react", "reactjs", "framework react"],
+    "category": "programming"
+  },
+  {
+    "id": "skill_backend_apis",
+    "name": "Backend y APIs REST",
+    "aliases": ["backend", "apis rest", "servicios web", "rest"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_microservices",
+    "name": "Microservicios",
+    "aliases": ["microservicios", "arquitectura microservicios"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_software_architecture",
+    "name": "Arquitectura de software",
+    "aliases": ["arquitectura de software", "diseno de sistemas", "patrones de diseno"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_testing",
+    "name": "Testing y QA",
+    "aliases": ["testing", "pruebas unitarias", "qa", "pruebas de software"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_cybersecurity_basic",
+    "name": "Ciberseguridad basica",
+    "aliases": ["ciberseguridad", "seguridad informatica", "cybersecurity"],
+    "category": "engineering"
+  },
+  {
+    "id": "skill_ai_ethics",
+    "name": "Etica de la IA",
+    "aliases": ["etica ia", "etica en ia", "responsable ai"],
+    "category": "ai"
+  },
+  {
+    "id": "skill_product_management_basic",
+    "name": "Gestion de producto basica",
+    "aliases": ["product management", "gestion de producto", "pm"],
+    "category": "engineering"
   }
 ]
-
