@@ -12,7 +12,7 @@ from .dataset.loader import load_dataset
 from .dataset.resolver import normalize_text
 from .llm.client import LLMClient
 from .llm.evaluator import evaluate_plan_with_llm
-from .llm.interpreter import validate_goal_spec
+from .llm.interpreter import resolve_role, validate_goal_spec
 from .llm.prompts import GOAL_INTERPRETER_SYSTEM_PROMPT, build_goal_interpreter_user_prompt
 from .metrics import extract_metrics_row, rows_to_csv_string
 from .models import Dataset, GoalSpec, PlanResult, StudentProfile
@@ -158,7 +158,7 @@ def run_planner_single(
         "ucs": ucs_plan,
         "astar": astar_plan,
     }
-    role = dataset.roles.get(goal.role_id)
+    role = resolve_role(goal, dataset)
     rec = role.recommended_skills if role else frozenset()
     if planner_name == "astar":
         return astar_plan(
@@ -186,7 +186,7 @@ def run_planner_k(
 ) -> list[PlanResult]:
     """Devuelve hasta k planes. Solo A* soporta k>1; otros planificadores devuelven 1 plan."""
     if planner_name == "astar":
-        role = dataset.roles.get(goal.role_id)
+        role = resolve_role(goal, dataset)
         rec = role.recommended_skills if role else frozenset()
         plans = astar_k_plans(
             profile.initial_skills,
@@ -225,7 +225,7 @@ def _enrich_plan(
         )
 
     if evaluate:
-        role = dataset.roles.get(goal.role_id)
+        role = resolve_role(goal, dataset)
         if role is not None:
             use_mock = provider == "mock"
             eval_client = LLMClient(settings) if not use_mock else None
@@ -233,7 +233,7 @@ def _enrich_plan(
                 plan, role, goal, dataset, eval_client, use_mock=use_mock
             )
 
-    role = dataset.roles.get(goal.role_id)
+    role = resolve_role(goal, dataset)
     if role is not None and plan.valid:
         score, breakdown = compute_score_with_breakdown(plan, role, profile)
         plan.final_score = score

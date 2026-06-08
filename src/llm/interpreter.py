@@ -1,13 +1,22 @@
 from __future__ import annotations
 
 from typing import Any, Protocol
-from ..models import Dataset, GoalSpec
+from ..models import Dataset, GoalSpec, Role
 from .prompts import GOAL_INTERPRETER_SYSTEM_PROMPT, build_goal_interpreter_user_prompt
+
+
+CUSTOM_ROLE_PREFIX = "custom_"
 
 
 class JSONCompleter(Protocol):
     def complete_json(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
         ...
+
+
+def _deslug_custom_role_id(role_id: str) -> str:
+    """Deriva un nombre legible desde un role_id custom_ cuando el LLM no aporta role_name."""
+    base = role_id.removeprefix(CUSTOM_ROLE_PREFIX).replace("_", " ").strip()
+    return base.capitalize() if base else "Rol a medida"
 
 
 def _ensure_list(value: Any, field_name: str) -> list[Any]:
@@ -28,8 +37,6 @@ def _ensure_dict(value: Any, field_name: str) -> dict[str, Any]:
 
 def validate_goal_spec(goal_spec: dict[str, Any], dataset: Dataset) -> GoalSpec:
     role_id = goal_spec.get("role_id")
-    if role_id not in dataset.roles:
-        raise ValueError("role_id no existe en el dataset")
 
     unknown = [str(item) for item in _ensure_list(goal_spec.get("unknown_skill_mentions"), "unknown_skill_mentions")]
 
@@ -57,6 +64,19 @@ def validate_goal_spec(goal_spec: dict[str, Any], dataset: Dataset) -> GoalSpec:
         else:
             unknown.append(skill_id)
 
+    role_name: str | None = None
+    if role_id in dataset.roles:
+        role_id = str(role_id)
+    elif isinstance(role_id, str) and role_id.startswith(CUSTOM_ROLE_PREFIX):
+        if not valid_target_skills:
+            raise ValueError(
+                "Un rol a medida (custom_) requiere al menos una habilidad valida en target_skill_ids"
+            )
+        raw_name = goal_spec.get("role_name")
+        role_name = str(raw_name).strip() if raw_name else _deslug_custom_role_id(role_id)
+    else:
+        raise ValueError("role_id no existe en el dataset")
+
     try:
         confidence = float(goal_spec.get("confidence", 0.0))
     except (TypeError, ValueError):
@@ -74,6 +94,23 @@ def validate_goal_spec(goal_spec: dict[str, Any], dataset: Dataset) -> GoalSpec:
         ],
         unknown_skill_mentions=unknown,
         confidence=confidence,
+        role_name=role_name,
+    )
+
+
+def resolve_role(goal: GoalSpec, dataset: Dataset) -> Role:
+    """
+    Devuelve el Role del catalogo o construye uno sintetico para un rol a medida.
+    """
+    role = dataset.roles.get(goal.role_id)
+    if role is not None:
+        return role
+    name = goal.role_name or _deslug_custom_role_id(goal.role_id)
+    return Role(
+        id=goal.role_id,
+        name=name,
+        required_skills=frozenset(goal.target_skill_ids),
+        recommended_skills=frozenset(),
     )
 
 

@@ -49,7 +49,7 @@ class Dataset:
     instances: list[dict[str, Any]] = field(default_factory=list)
 
 
-@dataclass  # sin frozen=True: los campos dict y list no son hashables
+@dataclass 
 class GoalSpec:
     role_id: str
     target_skill_ids: set[str]
@@ -59,6 +59,8 @@ class GoalSpec:
     ignored_constraints: list[str]
     unknown_skill_mentions: list[str]
     confidence: float
+    # Nombre legible cuando role_id es un rol a medida (prefijo "custom_"); None para roles del catalogo
+    role_name: str | None = None
 
 
 @dataclass(frozen=True)

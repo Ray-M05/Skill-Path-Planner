@@ -10,16 +10,17 @@ GOAL_INTERPRETER_SYSTEM_PROMPT = """Eres un componente de extraccion estructurad
 
 Reglas obligatorias:
 1. Devuelve exclusivamente JSON valido.
-2. No inventes IDs.
-3. El campo role_id debe ser uno de los roles permitidos.
+2. No inventes IDs de habilidades ni de cursos.
+3. El campo role_id debe ser uno de los roles permitidos. Excepcion: si NINGUN rol permitido encaja razonablemente con el objetivo, crea un rol a medida con un id nuevo que empiece con el prefijo "custom_" seguido de un slug en minusculas con guiones bajos derivado del nombre (ejemplo: "custom_disenador_de_videojuegos").
 4. Los campos target_skill_ids, initial_skill_ids y mentioned_skill_ids solo pueden contener skill_id incluidos en el catalogo permitido.
 5. Si el usuario menciona una habilidad que no existe en el catalogo, no la conviertas en skill_id. Colocala en unknown_skill_mentions.
 6. El sistema no modela costo monetario ni presupuesto.
 7. Si el usuario menciona "barato", "poco presupuesto", "gratis" o expresiones parecidas, colocalo en ignored_constraints.
-8. Si el objetivo es ambiguo, escoge el role_id mas cercano y baja confidence.
-9. Extrae initial_skill_ids solo desde habilidades que el usuario dice tener actualmente.
-10. Extrae restricciones como max_weeks, max_weekly_hours, preferred_pace, preferred_difficulty y preferences desde el texto del usuario.
-11. No expliques nada fuera del JSON.
+8. Prefiere SIEMPRE un rol existente. Solo crea un rol "custom_" cuando el objetivo claramente no corresponda a ningun rol del catalogo. Si el objetivo se acerca mas a un rol existente que a un perfil nuevo, usa el rol existente y baja confidence si el encaje es imperfecto.
+9. Cuando crees un rol "custom_": coloca en role_name un nombre de profesion conciso y legible (sin el prefijo "custom_" y sin IDs), y coloca en target_skill_ids las habilidades del catalogo necesarias para ese perfil (seran las habilidades requeridas del rol a medida). Si usas un rol existente, deja role_name en null.
+10. Extrae initial_skill_ids solo desde habilidades que el usuario dice tener actualmente.
+11. Extrae restricciones como max_weeks, max_weekly_hours, preferred_pace, preferred_difficulty y preferences desde el texto del usuario.
+12. No expliques nada fuera del JSON.
 """
 
 
@@ -34,7 +35,8 @@ def build_goal_interpreter_user_prompt(
     allowed_roles = RoleResolver(dataset.roles).get_allowed_role_catalog_for_prompt()
     allowed_skills = SkillResolver(dataset.skills).get_allowed_skill_catalog_for_prompt()
     output_schema = {
-        "role_id": "uno de los roles permitidos",
+        "role_id": "uno de los roles permitidos o un id nuevo con prefijo custom_",
+        "role_name": None,
         "target_skill_ids": ["skill_id_1", "skill_id_2"],
         "initial_skill_ids": ["skill_id_1"],
         "mentioned_skill_ids": ["skill_id_1"],
@@ -99,7 +101,7 @@ def build_plan_evaluator_user_prompt(
     dataset: Dataset,
 ) -> str:
     role_info = {
-        "id": role.id,
+        "id": role.id.removeprefix("custom_"),
         "name": role.name,
         "required_skills": sorted(role.required_skills),
         "recommended_skills": sorted(role.recommended_skills),
