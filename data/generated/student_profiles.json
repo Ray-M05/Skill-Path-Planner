@@ -1,0 +1,60 @@
+[
+  {
+    "id": "profile_principiante",
+    "initial_skills": [],
+    "max_weeks": 120,
+    "max_weekly_hours": 8,
+    "risk_tolerance": 0.4
+  },
+  {
+    "id": "profile_conservatorio",
+    "initial_skills": [
+      "instrumento_1",
+      "instrumento_2",
+      "teoria_1",
+      "teoria_2"
+    ],
+    "max_weeks": 60,
+    "max_weekly_hours": 10,
+    "risk_tolerance": 0.6
+  },
+  {
+    "id": "profile_autodidacta_produccion",
+    "initial_skills": [
+      "produccion_1",
+      "teoria_1"
+    ],
+    "max_weeks": 80,
+    "max_weekly_hours": 6,
+    "risk_tolerance": 0.5
+  },
+  {
+    "id": "profile_teorico",
+    "initial_skills": [
+      "armonia",
+      "teoria_1",
+      "teoria_2"
+    ],
+    "max_weeks": 70,
+    "max_weekly_hours": 8,
+    "risk_tolerance": 0.6
+  },
+  {
+    "id": "profile_cantante_aficionado",
+    "initial_skills": [
+      "canto_1"
+    ],
+    "max_weeks": 90,
+    "max_weekly_hours": 6,
+    "risk_tolerance": 0.4
+  },
+  {
+    "id": "profile_con_prisa",
+    "initial_skills": [
+      "teoria_1"
+    ],
+    "max_weeks": 24,
+    "max_weekly_hours": 12,
+    "risk_tolerance": 0.3
+  }
+]

@@ -1,0 +1,241 @@
+[
+  {
+    "id": "curso_teoria_1",
+    "name": "Curso de Teoria musical I",
+    "description": "Curso del area de Teoria musical que ensena Teoria musical I.",
+    "prerequisites": [],
+    "outcomes": [
+      "teoria_1"
+    ],
+    "duration_weeks": 3,
+    "weekly_hours": 6,
+    "difficulty": 0.24,
+    "pass_base_probability": 0.89
+  },
+  {
+    "id": "curso_teoria_2",
+    "name": "Curso de Teoria musical II",
+    "description": "Curso del area de Teoria musical que ensena Teoria musical II.",
+    "prerequisites": [
+      "teoria_1"
+    ],
+    "outcomes": [
+      "teoria_2"
+    ],
+    "duration_weeks": 4,
+    "weekly_hours": 5,
+    "difficulty": 0.33,
+    "pass_base_probability": 0.84
+  },
+  {
+    "id": "curso_armonia",
+    "name": "Curso de Armonia",
+    "description": "Curso del area de Teoria musical que ensena Armonia.",
+    "prerequisites": [
+      "teoria_2"
+    ],
+    "outcomes": [
+      "armonia"
+    ],
+    "duration_weeks": 7,
+    "weekly_hours": 6,
+    "difficulty": 0.52,
+    "pass_base_probability": 0.84
+  },
+  {
+    "id": "curso_contrapunto",
+    "name": "Curso de Contrapunto",
+    "description": "Curso del area de Teoria musical que ensena Contrapunto.",
+    "prerequisites": [
+      "armonia"
+    ],
+    "outcomes": [
+      "contrapunto"
+    ],
+    "duration_weeks": 8,
+    "weekly_hours": 4,
+    "difficulty": 0.6,
+    "pass_base_probability": 0.76
+  },
+  {
+    "id": "curso_instrumento_1",
+    "name": "Curso de Instrumento I",
+    "description": "Curso del area de Instrumento que ensena Instrumento I.",
+    "prerequisites": [],
+    "outcomes": [
+      "instrumento_1"
+    ],
+    "duration_weeks": 5,
+    "weekly_hours": 5,
+    "difficulty": 0.28,
+    "pass_base_probability": 0.91
+  },
+  {
+    "id": "curso_instrumento_2",
+    "name": "Curso de Instrumento II",
+    "description": "Curso del area de Instrumento que ensena Instrumento II.",
+    "prerequisites": [
+      "instrumento_1",
+      "teoria_1"
+    ],
+    "outcomes": [
+      "instrumento_2"
+    ],
+    "duration_weeks": 5,
+    "weekly_hours": 3,
+    "difficulty": 0.38,
+    "pass_base_probability": 0.89
+  },
+  {
+    "id": "curso_instrumento_3",
+    "name": "Curso de Instrumento III",
+    "description": "Curso del area de Instrumento que ensena Instrumento III.",
+    "prerequisites": [
+      "instrumento_2",
+      "teoria_2"
+    ],
+    "outcomes": [
+      "instrumento_3"
+    ],
+    "duration_weeks": 7,
+    "weekly_hours": 6,
+    "difficulty": 0.5,
+    "pass_base_probability": 0.81
+  },
+  {
+    "id": "curso_composicion_1",
+    "name": "Curso de Composicion I",
+    "description": "Curso del area de Composicion que ensena Composicion I.",
+    "prerequisites": [
+      "armonia",
+      "teoria_2"
+    ],
+    "outcomes": [
+      "composicion_1"
+    ],
+    "duration_weeks": 7,
+    "weekly_hours": 4,
+    "difficulty": 0.54,
+    "pass_base_probability": 0.81
+  },
+  {
+    "id": "curso_composicion_2",
+    "name": "Curso de Composicion II",
+    "description": "Curso del area de Composicion que ensena Composicion II.",
+    "prerequisites": [
+      "composicion_1",
+      "instrumento_2"
+    ],
+    "outcomes": [
+      "composicion_2"
+    ],
+    "duration_weeks": 8,
+    "weekly_hours": 6,
+    "difficulty": 0.58,
+    "pass_base_probability": 0.79
+  },
+  {
+    "id": "curso_composicion_avanzada",
+    "name": "Curso de Composicion avanzada",
+    "description": "Curso del area de Composicion que ensena Composicion avanzada.",
+    "prerequisites": [
+      "composicion_2",
+      "contrapunto"
+    ],
+    "outcomes": [
+      "composicion_avanzada"
+    ],
+    "duration_weeks": 8,
+    "weekly_hours": 3,
+    "difficulty": 0.7,
+    "pass_base_probability": 0.74
+  },
+  {
+    "id": "curso_produccion_1",
+    "name": "Curso de Produccion musical I",
+    "description": "Curso del area de Produccion musical que ensena Produccion musical I.",
+    "prerequisites": [],
+    "outcomes": [
+      "produccion_1"
+    ],
+    "duration_weeks": 5,
+    "weekly_hours": 5,
+    "difficulty": 0.3,
+    "pass_base_probability": 0.91
+  },
+  {
+    "id": "curso_mezcla",
+    "name": "Curso de Mezcla",
+    "description": "Curso del area de Produccion musical que ensena Mezcla.",
+    "prerequisites": [
+      "produccion_1"
+    ],
+    "outcomes": [
+      "mezcla"
+    ],
+    "duration_weeks": 6,
+    "weekly_hours": 4,
+    "difficulty": 0.37,
+    "pass_base_probability": 0.88
+  },
+  {
+    "id": "curso_masterizacion",
+    "name": "Curso de Masterizacion",
+    "description": "Curso del area de Produccion musical que ensena Masterizacion.",
+    "prerequisites": [
+      "mezcla"
+    ],
+    "outcomes": [
+      "masterizacion"
+    ],
+    "duration_weeks": 6,
+    "weekly_hours": 3,
+    "difficulty": 0.49,
+    "pass_base_probability": 0.84
+  },
+  {
+    "id": "curso_sound_design",
+    "name": "Curso de Diseno sonoro",
+    "description": "Curso del area de Produccion musical que ensena Diseno sonoro.",
+    "prerequisites": [
+      "armonia",
+      "masterizacion"
+    ],
+    "outcomes": [
+      "sound_design"
+    ],
+    "duration_weeks": 7,
+    "weekly_hours": 5,
+    "difficulty": 0.6,
+    "pass_base_probability": 0.77
+  },
+  {
+    "id": "curso_canto_1",
+    "name": "Curso de Canto I",
+    "description": "Curso del area de Canto que ensena Canto I.",
+    "prerequisites": [],
+    "outcomes": [
+      "canto_1"
+    ],
+    "duration_weeks": 4,
+    "weekly_hours": 5,
+    "difficulty": 0.23,
+    "pass_base_probability": 0.89
+  },
+  {
+    "id": "curso_canto_2",
+    "name": "Curso de Canto II",
+    "description": "Curso del area de Canto que ensena Canto II.",
+    "prerequisites": [
+      "canto_1",
+      "teoria_1"
+    ],
+    "outcomes": [
+      "canto_2"
+    ],
+    "duration_weeks": 5,
+    "weekly_hours": 6,
+    "difficulty": 0.36,
+    "pass_base_probability": 0.88
+  }
+]

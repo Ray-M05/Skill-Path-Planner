@@ -1,0 +1,169 @@
+[
+  {
+    "id": "teoria_1",
+    "name": "Teoria musical I",
+    "aliases": [
+      "teoria musical",
+      "teoria musical basica",
+      "solfeo",
+      "lectura de partitura",
+      "leer musica"
+    ],
+    "category": "Teoria musical"
+  },
+  {
+    "id": "teoria_2",
+    "name": "Teoria musical II",
+    "aliases": [
+      "teoria musical intermedia",
+      "intervalos y escalas",
+      "tonalidades",
+      "escalas"
+    ],
+    "category": "Teoria musical"
+  },
+  {
+    "id": "armonia",
+    "name": "Armonia",
+    "aliases": [
+      "armonia",
+      "acordes",
+      "progresiones de acordes",
+      "encadenamiento de acordes"
+    ],
+    "category": "Teoria musical"
+  },
+  {
+    "id": "contrapunto",
+    "name": "Contrapunto",
+    "aliases": [
+      "contrapunto",
+      "polifonia",
+      "fuga"
+    ],
+    "category": "Teoria musical"
+  },
+  {
+    "id": "instrumento_1",
+    "name": "Instrumento I",
+    "aliases": [
+      "tocar un instrumento",
+      "instrumento basico",
+      "piano basico",
+      "guitarra basica"
+    ],
+    "category": "Instrumento"
+  },
+  {
+    "id": "instrumento_2",
+    "name": "Instrumento II",
+    "aliases": [
+      "instrumento intermedio",
+      "tecnica instrumental",
+      "repertorio intermedio"
+    ],
+    "category": "Instrumento"
+  },
+  {
+    "id": "instrumento_3",
+    "name": "Instrumento III",
+    "aliases": [
+      "instrumento avanzado",
+      "virtuosismo",
+      "repertorio avanzado"
+    ],
+    "category": "Instrumento"
+  },
+  {
+    "id": "composicion_1",
+    "name": "Composicion I",
+    "aliases": [
+      "componer",
+      "composicion basica",
+      "melodia y forma",
+      "escribir musica"
+    ],
+    "category": "Composicion"
+  },
+  {
+    "id": "composicion_2",
+    "name": "Composicion II",
+    "aliases": [
+      "arreglos",
+      "orquestacion",
+      "composicion intermedia"
+    ],
+    "category": "Composicion"
+  },
+  {
+    "id": "composicion_avanzada",
+    "name": "Composicion avanzada",
+    "aliases": [
+      "composicion avanzada",
+      "composicion contemporanea"
+    ],
+    "category": "Composicion"
+  },
+  {
+    "id": "produccion_1",
+    "name": "Produccion musical I",
+    "aliases": [
+      "produccion musical",
+      "daw",
+      "home studio",
+      "grabacion basica",
+      "producir musica"
+    ],
+    "category": "Produccion musical"
+  },
+  {
+    "id": "mezcla",
+    "name": "Mezcla",
+    "aliases": [
+      "mezcla",
+      "mixing",
+      "mezclar audio"
+    ],
+    "category": "Produccion musical"
+  },
+  {
+    "id": "masterizacion",
+    "name": "Masterizacion",
+    "aliases": [
+      "masterizacion",
+      "mastering"
+    ],
+    "category": "Produccion musical"
+  },
+  {
+    "id": "sound_design",
+    "name": "Diseno sonoro",
+    "aliases": [
+      "diseno sonoro",
+      "sound design",
+      "sintesis",
+      "sintetizadores"
+    ],
+    "category": "Produccion musical"
+  },
+  {
+    "id": "canto_1",
+    "name": "Canto I",
+    "aliases": [
+      "canto basico",
+      "tecnica vocal",
+      "aprender a cantar"
+    ],
+    "category": "Canto"
+  },
+  {
+    "id": "canto_2",
+    "name": "Canto II",
+    "aliases": [
+      "canto intermedio",
+      "afinacion",
+      "repertorio vocal"
+    ],
+    "category": "Canto"
+  }
+]

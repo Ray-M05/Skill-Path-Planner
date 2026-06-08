@@ -16,6 +16,8 @@ import sys
 import textwrap
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("agg")
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import networkx as nx

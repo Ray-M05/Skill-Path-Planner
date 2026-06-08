@@ -109,7 +109,9 @@ def astar_k_plans(
     frontier: list[tuple[float, int, SearchState]] = [
         (g_cost(initial_state, rec) + initial_h, next(counter), initial_state)
     ]
-    best_cost_by_key: dict[tuple[frozenset[str], tuple[str, ...]], float] = {}
+    # La diversidad entre k-planes surge de `seen_plan_course_ids`
+    # que descarta planes con exactamente los mismos cursos.
+    best_cost_by_key: dict[frozenset[str], float] = {}
     plans: list[PlanResult] = []
     seen_plan_course_ids: set[tuple[str, ...]] = set()
     expanded_nodes = 0
@@ -122,7 +124,7 @@ def astar_k_plans(
         max_frontier_size = max(max_frontier_size, len(frontier))
         _, _, state = heapq.heappop(frontier)
         state_cost = g_cost(state, rec)
-        state_key = (state.skills, state.taken_courses)
+        state_key = state.skills
         if state_key in best_cost_by_key and best_cost_by_key[state_key] <= state_cost:
             continue
         best_cost_by_key[state_key] = state_cost

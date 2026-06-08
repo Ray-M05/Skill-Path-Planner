@@ -1,0 +1,92 @@
+[
+  {
+    "id": "gen_inst_000",
+    "profile_id": "profile_principiante",
+    "goal_text": "Me gustaria dedicarme a ser Interprete musical.",
+    "expected_role_id": "role_interprete"
+  },
+  {
+    "id": "gen_inst_001",
+    "profile_id": "profile_cantante_aficionado",
+    "goal_text": "Me gustaria dedicarme a ser Interprete musical.",
+    "expected_role_id": "role_interprete"
+  },
+  {
+    "id": "gen_inst_002",
+    "profile_id": "profile_teorico",
+    "goal_text": "Mi meta es convertirme en Compositor y puedo estudiar 8 horas semanales.",
+    "expected_role_id": "role_compositor"
+  },
+  {
+    "id": "gen_inst_003",
+    "profile_id": "profile_cantante_aficionado",
+    "goal_text": "Quiero ser Compositor.",
+    "expected_role_id": "role_compositor"
+  },
+  {
+    "id": "gen_inst_004",
+    "profile_id": "profile_autodidacta_produccion",
+    "goal_text": "Quiero ser Interprete musical.",
+    "expected_role_id": "role_interprete"
+  },
+  {
+    "id": "gen_inst_005",
+    "profile_id": "profile_teorico",
+    "goal_text": "Me gustaria dedicarme a ser Cantante.",
+    "expected_role_id": "role_cantante"
+  },
+  {
+    "id": "gen_inst_006",
+    "profile_id": "profile_autodidacta_produccion",
+    "goal_text": "Mi meta es convertirme en Compositor y puedo estudiar 6 horas semanales.",
+    "expected_role_id": "role_compositor"
+  },
+  {
+    "id": "gen_inst_007",
+    "profile_id": "profile_con_prisa",
+    "goal_text": "Mi meta es convertirme en Interprete musical y puedo estudiar 12 horas semanales.",
+    "expected_role_id": "role_interprete"
+  },
+  {
+    "id": "gen_inst_008",
+    "profile_id": "profile_teorico",
+    "goal_text": "Quiero ser Profesor de musica.",
+    "expected_role_id": "role_profesor"
+  },
+  {
+    "id": "gen_inst_009",
+    "profile_id": "profile_autodidacta_produccion",
+    "goal_text": "Quiero ser Productor musical.",
+    "expected_role_id": "role_productor"
+  },
+  {
+    "id": "gen_inst_010",
+    "profile_id": "profile_principiante",
+    "goal_text": "Mi meta es convertirme en Productor musical y puedo estudiar 8 horas semanales.",
+    "expected_role_id": "role_productor"
+  },
+  {
+    "id": "gen_inst_011",
+    "profile_id": "profile_cantante_aficionado",
+    "goal_text": "Quiero ser Productor musical.",
+    "expected_role_id": "role_productor"
+  },
+  {
+    "id": "gen_inst_012",
+    "profile_id": "profile_cantante_aficionado",
+    "goal_text": "Mi meta es convertirme en Cantante y puedo estudiar 6 horas semanales.",
+    "expected_role_id": "role_cantante"
+  },
+  {
+    "id": "gen_inst_013",
+    "profile_id": "profile_conservatorio",
+    "goal_text": "Quiero ser Compositor.",
+    "expected_role_id": "role_compositor"
+  },
+  {
+    "id": "gen_inst_014",
+    "profile_id": "profile_conservatorio",
+    "goal_text": "Mi meta es convertirme en Profesor de musica y puedo estudiar 10 horas semanales.",
+    "expected_role_id": "role_profesor"
+  }
+]

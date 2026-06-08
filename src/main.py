@@ -89,17 +89,47 @@ def _skill_is_mentioned(user_text: str, skill_name_or_alias: str) -> bool:
     return bool(normalized_skill and normalized_skill in normalized_text)
 
 
+# Palabras vacias para emparejar el objetivo con el nombre de un rol del catalogo.
+_GOAL_STOPWORDS = {
+    "quiero", "ser", "un", "una", "de", "del", "la", "el", "los", "las", "y", "en",
+    "para", "como", "me", "gustaria", "mi", "meta", "es", "convertirme", "trabajar",
+    "dedicarme", "prepararme", "llegar", "busco", "trayectoria", "a", "con", "que",
+    "puedo", "estudiar", "semanales", "horas", "se", "lo", "mas", "rapido", "posible",
+}
+
+
+def _match_role_id(user_text: str, dataset: Dataset) -> tuple[str | None, float]:
+    """Empareja el texto del usuario con el rol mas parecido del dataset cargado.
+    """
+    norm = normalize_text(user_text)
+    text_tokens = set(norm.split()) - _GOAL_STOPWORDS
+    best_id: str | None = None
+    best_score = 0.0
+    for role in dataset.roles.values():
+        role_norm = normalize_text(role.name)
+        role_tokens = set(role_norm.split()) - _GOAL_STOPWORDS
+        if not role_tokens:
+            continue
+        score = len(text_tokens & role_tokens) / len(role_tokens)
+        if role_norm and role_norm in norm:
+            score += 1.0  # el nombre del rol aparece literal en la consulta
+        if score > best_score:
+            best_score = score
+            best_id = role.id
+    return best_id, best_score
+
+
 def build_mock_goal_response(user_text: str, dataset: Dataset) -> dict[str, Any]:
-    normalized = normalize_text(user_text)
-    if "machine learning" in normalized or "ml" in normalized:
-        role_id = "role_ml_engineer"
-        confidence = 0.85
-    elif "analista" in normalized or "analisis de datos" in normalized or "datos" in normalized:
-        role_id = "role_data_analyst"
+    """Interprete mock agnostico al dataset: elige el rol existente mas parecido por
+    nombre y detecta skills mencionadas por nombre/alias. No crea roles a medida."""
+    role_id, score = _match_role_id(user_text, dataset)
+    if role_id is None:
+        role_id = next(iter(dataset.roles))  # fallback determinista
+        confidence = 0.3
+    elif score >= 1.0:
         confidence = 0.85
     else:
-        role_id = "role_data_analyst"
-        confidence = 0.45
+        confidence = 0.6
 
     mentioned_skill_ids: set[str] = set()
     for skill in dataset.skills.values():
@@ -107,20 +137,16 @@ def build_mock_goal_response(user_text: str, dataset: Dataset) -> dict[str, Any]
         if any(_skill_is_mentioned(user_text, candidate) for candidate in candidates):
             mentioned_skill_ids.add(skill.id)
 
-    initial_skill_ids = set(mentioned_skill_ids)
     role = dataset.roles[role_id]
-    unknown_skill_mentions = []
-    if "blockchain" in normalized:
-        unknown_skill_mentions.append("blockchain")
-
     return {
         "role_id": role_id,
+        "role_name": None,
         "target_skill_ids": sorted(role.required_skills),
-        "initial_skill_ids": sorted(initial_skill_ids),
+        "initial_skill_ids": sorted(mentioned_skill_ids),
         "mentioned_skill_ids": sorted(mentioned_skill_ids),
         "constraints": _extract_constraints(user_text),
         "ignored_constraints": _extract_ignored_constraints(user_text),
-        "unknown_skill_mentions": unknown_skill_mentions,
+        "unknown_skill_mentions": [],
         "confidence": confidence,
     }
 

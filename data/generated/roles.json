@@ -1,0 +1,65 @@
+[
+  {
+    "id": "role_interprete",
+    "name": "Interprete musical",
+    "required_skills": [
+      "instrumento_3",
+      "teoria_2"
+    ],
+    "recommended_skills": [
+      "canto_2",
+      "contrapunto"
+    ]
+  },
+  {
+    "id": "role_compositor",
+    "name": "Compositor",
+    "required_skills": [
+      "armonia",
+      "composicion_2",
+      "teoria_2"
+    ],
+    "recommended_skills": [
+      "contrapunto",
+      "instrumento_2"
+    ]
+  },
+  {
+    "id": "role_productor",
+    "name": "Productor musical",
+    "required_skills": [
+      "armonia",
+      "masterizacion",
+      "mezcla",
+      "produccion_1"
+    ],
+    "recommended_skills": [
+      "composicion_1",
+      "sound_design"
+    ]
+  },
+  {
+    "id": "role_profesor",
+    "name": "Profesor de musica",
+    "required_skills": [
+      "armonia",
+      "instrumento_2",
+      "teoria_2"
+    ],
+    "recommended_skills": [
+      "canto_2",
+      "composicion_1"
+    ]
+  },
+  {
+    "id": "role_cantante",
+    "name": "Cantante",
+    "required_skills": [
+      "canto_2",
+      "teoria_1"
+    ],
+    "recommended_skills": [
+      "instrumento_1"
+    ]
+  }
+]

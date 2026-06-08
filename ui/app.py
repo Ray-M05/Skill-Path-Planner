@@ -77,7 +77,11 @@ THEME = gr.themes.Soft(
 
 
 def _fmt_json(obj: dict) -> str:
-    return json.dumps(obj, ensure_ascii=False, indent=2)
+    def _default(o: object) -> object:
+        if isinstance(o, (set, frozenset)):
+            return sorted(o)
+        raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+    return json.dumps(obj, ensure_ascii=False, indent=2, default=_default)
 
 
 def _fmt_score_md(best) -> str:
