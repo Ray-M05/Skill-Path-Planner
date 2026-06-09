@@ -84,7 +84,9 @@ def compute_score_with_breakdown(
         "time_penalty": round(-0.20 * time_penalty, 4),
         "difficulty_penalty": round(-0.10 * difficulty_penalty, 4),
         "mc_success": round(0.25 * mc_success, 4),
+        "mc_success_raw": round(mc_success, 4),
         "llm_quality": round(0.20 * llm_quality, 4),
+        "llm_quality_raw": round(llm_quality, 4),
         "signals": {
             "has_mc": has_mc,
             "has_llm": has_llm,

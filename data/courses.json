@@ -1,5 +1,16 @@
 [
   {
+    "id": "course_python_basic",
+    "name": "Python basico",
+    "description": "Introduccion a la programacion: variables, tipos, control de flujo y funciones.",
+    "prerequisites": [],
+    "outcomes": ["skill_python_basic"],
+    "duration_weeks": 4,
+    "weekly_hours": 4,
+    "difficulty": 0.15,
+    "pass_base_probability": 0.95
+  },
+  {
     "id": "course_python_intermediate",
     "name": "Python intermedio",
     "description": "Funciones, modulos, archivos y programacion orientada a objetos.",

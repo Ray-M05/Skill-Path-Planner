@@ -23,6 +23,8 @@ from .scoring import compute_score_with_breakdown, rank_plans
 from .simulation.monte_carlo import attach_monte_carlo_to_plan, evaluate_plan_monte_carlo
 from .validators import validate_plan
 
+DEFAULT_MAX_NODES = 200000
+
 
 def _pretty_json(value: Any) -> str:
     def default(obj: Any) -> Any:
@@ -336,7 +338,7 @@ def run_cli(args: argparse.Namespace) -> int:
 
     # --- Modo planificador automático ---
     k = args.k
-    plans = run_planner_k(args.planner, k, goal, dataset, validation_profile, max_nodes=args.max_nodes)
+    plans = run_planner_k(args.planner, k, goal, dataset, validation_profile, max_nodes=DEFAULT_MAX_NODES)
 
     if not plans:
         print(_section(f"PLANIFICADOR {args.planner.upper()}", "No se encontro ninguna trayectoria valida."))
@@ -480,12 +482,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Imprimir fila CSV de metricas en terminal.",
-    )
-    parser.add_argument(
-        "--max-nodes",
-        type=int,
-        default=0,
-        help="Limite de nodos expandidos por A*. 0 = sin limite.",
     )
     parser.add_argument(
         "--metrics-output",

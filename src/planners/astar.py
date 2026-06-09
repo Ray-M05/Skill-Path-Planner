@@ -8,10 +8,13 @@ import time
 from ..models import Course, PlanResult, SearchState, StudentProfile
 from .common import (
     apply_course,
+    build_skill_producers,
+    course_h_cost,
     is_applicable,
     is_goal,
     make_failure_result,
     make_plan_result,
+    prerequisite_closure,
     violates_profile_limits,
 )
 
@@ -31,24 +34,34 @@ def g_cost(state: SearchState, recommended_skills: frozenset[str] | None = None)
     return base
 
 
-def h_cost(state: SearchState, target_skills: set[str], courses: dict[str, Course]) -> float:
+def h_cost(
+    state: SearchState,
+    target_skills: set[str],
+    courses: dict[str, Course],
+    producers: dict[str, Course] | None = None,
+    needed_closure: set[str] | None = None,
+) -> float:
+    """Heuristica admisible consciente de prerequisitos.
+    Suma el costo (course_h_cost) de los cursos productores de cada skill aun pendiente del
+    cierre de prerequisitos de los objetivos. Como cada skill pendiente exige tomar su
+    curso productor, la suma es cota inferior del costo restante => admisible y A* sigue optimo.
+    """
     missing = target_skills - set(state.skills)
     if not missing:
         return 0.0
 
-    min_duration = min(c.duration_weeks for c in courses.values())
-    min_difficulty = min(c.difficulty for c in courses.values())
-    max_gain = 0
-    for course in courses.values():
-        objective_gain = len(course.outcomes & missing)
-        if objective_gain > max_gain:
-            max_gain = objective_gain
+    if producers is None:
+        producers = build_skill_producers(courses)
 
-    if max_gain == 0:
+    # Objetivo inalcanzable: alguna skill objetivo no la produce ningun curso.
+    if any(producers.get(skill_id) is None for skill_id in missing):
         return math.inf
 
-    n_courses_needed = math.ceil(len(missing) / max_gain)
-    return n_courses_needed * (min_duration + 2.0 * min_difficulty + 0.5)
+    if needed_closure is None:
+        needed_closure = prerequisite_closure(set(target_skills), courses, producers)
+
+    remaining = needed_closure - set(state.skills)
+    return sum(course_h_cost(producers[skill_id]) for skill_id in remaining)
 
 
 def astar_plan(
@@ -95,13 +108,15 @@ def astar_k_plans(
     """Genera hasta k planes con A*. max_nodes=0 significa sin limite de expansion."""
     rec = recommended_skills or frozenset()
     start_time = time.perf_counter()
+    producers = build_skill_producers(courses)
+    needed_closure = prerequisite_closure(set(target_skills), courses, producers)
     initial_state = SearchState(
         skills=frozenset(initial_skills),
         taken_courses=(),
         weeks_used=0,
         difficulty_sum=0.0,
     )
-    initial_h = h_cost(initial_state, target_skills, courses)
+    initial_h = h_cost(initial_state, target_skills, courses, producers, needed_closure)
     if math.isinf(initial_h):
         return []
 
@@ -148,13 +163,19 @@ def astar_k_plans(
                 plans.append(result)
             continue
 
+        # Poda: solo cursos que producen una skill aun pendiente del cierre de prerequisitos.
+        # Acota los estados alcanzables a subconjuntos del cierre y descarta cursos
+        #  irrelevantes o ya cubiertos sin perder optimalidad.
+        needed_now = needed_closure - set(state.skills)
         for course in courses.values():
+            if course.outcomes.isdisjoint(needed_now):
+                continue
             if not is_applicable(course, state):
                 continue
             if violates_profile_limits(course, state, profile):
                 continue
             next_state = apply_course(course, state)
-            heuristic = h_cost(next_state, target_skills, courses)
+            heuristic = h_cost(next_state, target_skills, courses, producers, needed_closure)
             if math.isinf(heuristic):
                 continue
             priority = g_cost(next_state, rec) + heuristic

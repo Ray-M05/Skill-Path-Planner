@@ -6,6 +6,48 @@ from ..models import Course, PlanResult, SearchState, StudentProfile
 from ..validators import validate_plan
 
 
+def course_h_cost(course: Course) -> float:
+    # Componente del costo de un curso para la heuristica (semanas + dificultad).
+    return course.duration_weeks + 2.0 * course.difficulty
+
+
+def build_skill_producers(courses: dict[str, Course]) -> dict[str, Course]:
+    # Mapa skill_id -> curso que la produce (el de menor course_h_cost si hubiera varios).
+    producers: dict[str, Course] = {}
+    for course in courses.values():
+        for skill_id in course.outcomes:
+            current = producers.get(skill_id)
+            if current is None or course_h_cost(course) < course_h_cost(current):
+                producers[skill_id] = course
+    return producers
+
+
+def prerequisite_closure(
+    target_skills: set[str],
+    courses: dict[str, Course],
+    producers: dict[str, Course] | None = None,
+) -> set[str]:
+    """ Devuelve todas las skills producibles que hay que adquirir para alcanzar los objetivos:
+    los propios objetivos mas sus prerequisitos transitivos que tengan curso productor.
+    Las skills base sin productor se excluyen (se asumen como conocimiento inicial; si faltan,
+    la busqueda fallara por si sola al no poder satisfacer los prerequisitos).
+    """
+    if producers is None:
+        producers = build_skill_producers(courses)
+    closure: set[str] = set()
+    stack = list(target_skills)
+    while stack:
+        skill_id = stack.pop()
+        if skill_id in closure:
+            continue
+        course = producers.get(skill_id)
+        if course is None:
+            continue
+        closure.add(skill_id)
+        stack.extend(course.prerequisites)
+    return closure
+
+
 def is_goal(state: SearchState, target_skills: set[str]) -> bool:
     return target_skills.issubset(state.skills)
 

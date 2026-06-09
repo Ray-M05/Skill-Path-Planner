@@ -7,10 +7,12 @@ import time
 from ..models import Course, PlanResult, SearchState, StudentProfile
 from .common import (
     apply_course,
+    build_skill_producers,
     is_applicable,
     is_goal,
     make_failure_result,
     make_plan_result,
+    prerequisite_closure,
     violates_profile_limits,
 )
 
@@ -30,6 +32,9 @@ def ucs_plan(
     profile: StudentProfile,
 ) -> PlanResult:
     start_time = time.perf_counter()
+    # Poda: cierre de prerequisitos de los objetivos
+    producers = build_skill_producers(courses)
+    needed_closure = prerequisite_closure(set(target_skills), courses, producers)
     initial_state = SearchState(
         skills=frozenset(initial_skills),
         taken_courses=(),
@@ -65,7 +70,10 @@ def ucs_plan(
                 start_time,
             )
 
+        needed_now = needed_closure - set(state.skills)
         for course in courses.values():
+            if course.outcomes.isdisjoint(needed_now):
+                continue
             if not is_applicable(course, state):
                 continue
             if violates_profile_limits(course, state, profile):
