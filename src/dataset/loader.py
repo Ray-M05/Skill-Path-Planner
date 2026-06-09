@@ -111,55 +111,80 @@ def load_roles(path: str | Path, skills: dict[str, Skill]) -> dict[str, Role]:
     return roles
 
 
-def load_profiles(path: str | Path, skills: dict[str, Skill]) -> dict[str, StudentProfile]:
-    raw_profiles = _read_json(path)
-    _ensure_unique_ids(raw_profiles, "student_profiles.json")
-    profiles: dict[str, StudentProfile] = {}
+def _build_profile(
+    data: dict[str, Any],
+    skills: dict[str, Skill],
+    context: str,
+    profile_id: str,
+) -> StudentProfile:
+    """Construye y valida un StudentProfile a partir de un diccionario de datos."""
+    _ensure_positive_int(data.get("max_weeks"), "max_weeks", context)
+    _ensure_positive_int(data.get("max_weekly_hours"), "max_weekly_hours", context)
+    _ensure_between_zero_and_one(data.get("risk_tolerance"), "risk_tolerance", context)
 
-    for item in raw_profiles:
-        context = f"El perfil {item.get('id')}"
-        _ensure_positive_int(item.get("max_weeks"), "max_weeks", context)
-        _ensure_positive_int(item.get("max_weekly_hours"), "max_weekly_hours", context)
-        _ensure_between_zero_and_one(item.get("risk_tolerance"), "risk_tolerance", context)
+    initial_skills = frozenset(data.get("initial_skills", []))
+    for skill_id in initial_skills:
+        _ensure_skill_exists(skill_id, skills, context)
 
-        initial_skills = frozenset(item.get("initial_skills", []))
-        for skill_id in initial_skills:
-            _ensure_skill_exists(skill_id, skills, context)
+    return StudentProfile(
+        id=profile_id,
+        initial_skills=initial_skills,
+        max_weeks=data["max_weeks"],
+        max_weekly_hours=data["max_weekly_hours"],
+        risk_tolerance=float(data["risk_tolerance"]),
+    )
 
-        profiles[item["id"]] = StudentProfile(
-            id=item["id"],
-            initial_skills=initial_skills,
-            max_weeks=item["max_weeks"],
-            max_weekly_hours=item["max_weekly_hours"],
-            risk_tolerance=float(item["risk_tolerance"]),
-        )
 
-    return profiles
+def profile_from_instance(
+    instance: dict[str, Any],
+    skills: dict[str, Skill] | None = None,
+) -> StudentProfile:
+    """Construye el StudentProfile embebido en el bloque 'student' de una instancia.
+
+    Con `skills` valida que las skills iniciales existan; sin `skills` asume que la
+    instancia ya fue validada al cargar (camino rapido para el runner)."""
+    instance_id = instance.get("id")
+    student = instance.get("student")
+    if not isinstance(student, dict):
+        raise ValueError(f"La instancia {instance_id} no tiene un bloque 'student'.")
+    label = student.get("label") or instance_id
+    if skills is not None:
+        context = f"El estudiante de la instancia {instance_id}"
+        return _build_profile(student, skills, context, label)
+    return StudentProfile(
+        id=label,
+        initial_skills=frozenset(student.get("initial_skills", [])),
+        max_weeks=student["max_weeks"],
+        max_weekly_hours=student["max_weekly_hours"],
+        risk_tolerance=float(student["risk_tolerance"]),
+    )
 
 
 def load_instances(
     path: str | Path,
-    profiles: dict[str, StudentProfile] | None = None,
+    skills: dict[str, Skill] | None = None,
     roles: dict[str, Role] | None = None,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], dict[str, StudentProfile]]:
+    """Carga las instancias y deriva los perfiles desde el bloque 'student' embebido.
+
+    Devuelve (instancias, perfiles) donde perfiles esta indexado por la etiqueta
+    legible del estudiante (campo 'label', o el id de la instancia si falta)."""
     if not Path(path).exists():
-        return []
+        return [], {}
     raw_instances = _read_json(path)
     _ensure_unique_ids(raw_instances, "instances.json")
-    if profiles is not None and roles is not None:
-        for item in raw_instances:
-            instance_id = item.get("id")
-            profile_id = item.get("profile_id")
-            role_id = item.get("expected_role_id")
-            if profile_id not in profiles:
-                raise ValueError(
-                    f"La instancia {instance_id} referencia un perfil inexistente: {profile_id}."
-                )
-            if role_id not in roles:
-                raise ValueError(
-                    f"La instancia {instance_id} referencia un rol inexistente: {role_id}."
-                )
-    return list(raw_instances)
+    profiles: dict[str, StudentProfile] = {}
+    for item in raw_instances:
+        instance_id = item.get("id")
+        role_id = item.get("expected_role_id")
+        if roles is not None and role_id not in roles:
+            raise ValueError(
+                f"La instancia {instance_id} referencia un rol inexistente: {role_id}."
+            )
+        if skills is not None:
+            profile = profile_from_instance(item, skills)
+            profiles[profile.id] = profile
+    return list(raw_instances), profiles
 
 
 def load_dataset(data_dir: str | Path) -> Dataset:
@@ -167,8 +192,7 @@ def load_dataset(data_dir: str | Path) -> Dataset:
     skills = load_skills(data_path / "skills.json")
     courses = load_courses(data_path / "courses.json", skills)
     roles = load_roles(data_path / "roles.json", skills)
-    profiles = load_profiles(data_path / "student_profiles.json", skills)
-    instances = load_instances(data_path / "instances.json", profiles, roles)
+    instances, profiles = load_instances(data_path / "instances.json", skills, roles)
     return Dataset(
         skills=skills,
         courses=courses,

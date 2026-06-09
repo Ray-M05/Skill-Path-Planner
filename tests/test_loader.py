@@ -7,7 +7,6 @@ from src.dataset.loader import (
     load_courses,
     load_dataset,
     load_instances,
-    load_profiles,
     load_roles,
     load_skills,
 )
@@ -22,7 +21,7 @@ def test_load_dataset_from_data_directory() -> None:
     assert "course_machine_learning_basic" in dataset.courses
     assert "role_ml_engineer" in dataset.roles
     assert "profile_beginner" in dataset.profiles
-    assert len(dataset.instances) == 28
+    assert len(dataset.instances) == 29
 
 
 def test_load_courses_rejects_unknown_skill(tmp_path: Path) -> None:
@@ -85,18 +84,24 @@ def test_load_courses_rejects_invalid_numeric_values(
         load_courses(courses_path, skills)
 
 
-def test_load_profiles_rejects_invalid_limits(tmp_path: Path) -> None:
+def test_embedded_student_rejects_invalid_limits(tmp_path: Path) -> None:
     skills = load_skills("data/skills.json")
-    profiles_path = tmp_path / "student_profiles.json"
-    profiles_path.write_text(
+    roles = load_roles("data/roles.json", skills)
+    instances_path = tmp_path / "instances.json"
+    instances_path.write_text(
         json.dumps(
             [
                 {
-                    "id": "profile_bad",
-                    "initial_skills": ["skill_python_basic"],
-                    "max_weeks": 0,
-                    "max_weekly_hours": 10,
-                    "risk_tolerance": 0.4,
+                    "id": "inst_bad",
+                    "goal_text": "Quiero ser analista de datos.",
+                    "expected_role_id": "role_data_analyst",
+                    "student": {
+                        "label": "profile_bad",
+                        "initial_skills": ["skill_python_basic"],
+                        "max_weeks": 0,
+                        "max_weekly_hours": 10,
+                        "risk_tolerance": 0.4,
+                    },
                 }
             ]
         ),
@@ -104,7 +109,7 @@ def test_load_profiles_rejects_invalid_limits(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="max_weeks"):
-        load_profiles(profiles_path, skills)
+        load_instances(instances_path, skills, roles)
 
 
 def test_load_roles_rejects_unknown_skill(tmp_path: Path) -> None:
@@ -128,27 +133,32 @@ def test_load_roles_rejects_unknown_skill(tmp_path: Path) -> None:
         load_roles(roles_path, skills)
 
 
-def test_load_instances_rejects_unknown_profile_or_role(tmp_path: Path) -> None:
+def test_load_instances_rejects_unknown_role(tmp_path: Path) -> None:
     skills = load_skills("data/skills.json")
     roles = load_roles("data/roles.json", skills)
-    profiles = load_profiles("data/student_profiles.json", skills)
     instances_path = tmp_path / "instances.json"
     instances_path.write_text(
         json.dumps(
             [
                 {
                     "id": "inst_bad",
-                    "profile_id": "profile_missing",
                     "goal_text": "Quiero ser analista de datos.",
-                    "expected_role_id": "role_data_analyst",
+                    "expected_role_id": "role_missing",
+                    "student": {
+                        "label": "profile_x",
+                        "initial_skills": ["skill_python_basic"],
+                        "max_weeks": 40,
+                        "max_weekly_hours": 10,
+                        "risk_tolerance": 0.4,
+                    },
                 }
             ]
         ),
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="perfil inexistente"):
-        load_instances(instances_path, profiles, roles)
+    with pytest.raises(ValueError, match="rol inexistente"):
+        load_instances(instances_path, skills, roles)
 
 
 def test_load_skills_rejects_duplicate_ids(tmp_path: Path) -> None:

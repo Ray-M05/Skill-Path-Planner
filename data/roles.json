@@ -164,5 +164,17 @@
       "skill_cloud_aws_basic"
     ],
     "recommended_skills": ["skill_cybersecurity_basic", "skill_microservices"]
+  },
+  {
+    "id": "role_robotics_engineer",
+    "name": "Ingeniero de Robotica",
+    "required_skills": [
+      "skill_computer_vision",
+      "skill_reinforcement_learning",
+      "skill_linear_algebra",
+      "skill_calculus",
+      "skill_statistics_advanced"
+    ],
+    "recommended_skills": ["skill_deep_learning_advanced", "skill_machine_learning_advanced"]
   }
 ]

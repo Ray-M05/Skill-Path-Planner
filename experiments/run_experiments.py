@@ -10,7 +10,7 @@ import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from src.dataset.loader import load_dataset
+from src.dataset.loader import load_dataset, profile_from_instance
 from src.llm.evaluator import evaluate_plan_with_llm
 from src.metrics import csv_fields, extract_metrics_row
 from src.models import Dataset, GoalSpec, PlanResult, StudentProfile
@@ -28,7 +28,7 @@ def build_goal_from_instance(instance: dict, dataset: Dataset) -> GoalSpec:
     """Construye GoalSpec directamente desde expected_role_id y el perfil (sin LLM)."""
     role_id = instance["expected_role_id"]
     role = dataset.roles[role_id]
-    profile = dataset.profiles[instance["profile_id"]]
+    profile = profile_from_instance(instance)
     return GoalSpec(
         role_id=role_id,
         target_skill_ids=set(role.required_skills),
@@ -165,13 +165,12 @@ def main(argv: list[str] | None = None) -> int:
             writer.writeheader()
 
         for instance in instances:
-            profile_id = instance["profile_id"]
-            if profile_id not in dataset.profiles:
-                print(f"[SKIP] {instance['id']}: perfil '{profile_id}' no encontrado en el dataset.")
+            if not isinstance(instance.get("student"), dict):
+                print(f"[SKIP] {instance['id']}: la instancia no tiene bloque 'student'.")
                 done += len(cfg["variants"])
                 continue
 
-            profile = dataset.profiles[profile_id]
+            profile = profile_from_instance(instance)
             goal = build_goal_from_instance(instance, dataset)
 
             for variant in cfg["variants"]:

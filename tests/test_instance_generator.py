@@ -5,7 +5,7 @@ import re
 import networkx as nx
 import pytest
 
-from src.dataset.loader import load_dataset
+from src.dataset.loader import load_dataset, profile_from_instance
 from src.models import StudentProfile
 from src.planners.ucs import ucs_plan
 from src.simulation.instance_generator import (
@@ -81,7 +81,7 @@ def test_generated_instances_are_solvable(dataset):
     """Cada instancia generada admite un plan valido."""
     assert dataset.instances
     for instance in dataset.instances:
-        profile = dataset.profiles[instance["profile_id"]]
+        profile = profile_from_instance(instance)
         role = dataset.roles[instance["expected_role_id"]]
         plan = ucs_plan(
             set(profile.initial_skills),

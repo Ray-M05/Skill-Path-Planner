@@ -213,9 +213,9 @@ def generate_instances(
         instances.append(
             {
                 "id": f"gen_inst_{len(instances):03d}",
-                "profile_id": pid,
                 "goal_text": goal_text,
                 "expected_role_id": rid,
+                "student": _profile_to_student(profile),
             }
         )
     return instances
@@ -260,9 +260,10 @@ def _role_to_dict(r: Role) -> dict:
     }
 
 
-def _profile_to_dict(p: StudentProfile) -> dict:
+def _profile_to_student(p: StudentProfile) -> dict:
+    """Serializa un perfil como bloque 'student' embebido en una instancia."""
     return {
-        "id": p.id,
+        "label": p.id,
         "initial_skills": sorted(p.initial_skills),
         "max_weeks": p.max_weeks,
         "max_weekly_hours": p.max_weekly_hours,
@@ -281,7 +282,6 @@ def write_dataset(ds: GeneratedDataset, out_dir: str | Path) -> Path:
     _dump(out / "skills.json", [_skill_to_dict(s) for s in ds.skills.values()])
     _dump(out / "courses.json", [_course_to_dict(c) for c in ds.courses.values()])
     _dump(out / "roles.json", [_role_to_dict(r) for r in ds.roles.values()])
-    _dump(out / "student_profiles.json", [_profile_to_dict(p) for p in ds.profiles.values()])
     _dump(out / "instances.json", ds.instances)
     return out
 
