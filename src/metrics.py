@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import io
-from dataclasses import asdict
 from typing import Any
 from .models import PlanResult
 
@@ -18,9 +17,6 @@ _CSV_FIELDS = [
     "expanded_nodes",
     "max_frontier_size",
     "runtime_seconds",
-    "csp_feasible",
-    "csp_total_periods",
-    "csp_runtime_seconds",
     "mc_success_probability",
     "mc_expected_weeks",
     "mc_expected_failed_courses",
@@ -37,7 +33,6 @@ def extract_metrics_row(
     # Extrae una fila de métricas de un PlanResult para exportar a CSV.
     mc = plan.monte_carlo or {}
     llm = plan.llm_evaluation or {}
-    csp = asdict(plan.schedule) if plan.schedule else {}
 
     if target_skill_ids:
         total = len(target_skill_ids)
@@ -48,6 +43,14 @@ def extract_metrics_row(
 
     mc_skipped = mc.get("skipped", False)
     llm_skipped = llm.get("skipped", False)
+
+    # Score final: un plan invalido/fallido vale 0 (no se excluye del promedio)
+    if plan.final_score is not None:
+        final_score: float | str = plan.final_score
+    elif not plan.valid:
+        final_score = 0.0
+    else:
+        final_score = ""
 
     return {
         "instance_id": instance_id,
@@ -61,14 +64,11 @@ def extract_metrics_row(
         "expanded_nodes": plan.expanded_nodes,
         "max_frontier_size": plan.max_frontier_size,
         "runtime_seconds": round(plan.runtime_seconds, 6),
-        "csp_feasible": 1 if csp.get("feasible") else (0 if csp else ""),
-        "csp_total_periods": csp.get("total_periods", ""),
-        "csp_runtime_seconds": "",
         "mc_success_probability": "" if mc_skipped else mc.get("success_probability", ""),
         "mc_expected_weeks": "" if mc_skipped else mc.get("expected_weeks", ""),
         "mc_expected_failed_courses": "" if mc_skipped else mc.get("expected_failed_courses", ""),
         "llm_global_quality": "" if llm_skipped else llm.get("global_quality", ""),
-        "final_score": plan.final_score if plan.final_score is not None else "",
+        "final_score": final_score,
     }
 
 

@@ -150,6 +150,16 @@ def test_extract_metrics_row_no_final_score_gives_empty() -> None:
     assert row["final_score"] == ""
 
 
+def test_extract_metrics_row_invalid_plan_score_is_zero() -> None:
+    # Un plan invalido cuenta como score 0 (no vacio) para que entre en el
+    # promedio y penalice a la variante que falla 
+    plan = _make_plan([], reached_skills=set(), valid=False, final_score=None)
+
+    row = extract_metrics_row(plan)
+
+    assert row["final_score"] == 0.0
+
+
 # ---------------------------------------------------------------------------
 # rows_to_csv_string
 # ---------------------------------------------------------------------------

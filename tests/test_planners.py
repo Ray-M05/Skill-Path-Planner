@@ -31,7 +31,7 @@ def test_ucs_finds_valid_ml_engineer_plan() -> None:
     profile = dataset.profiles["profile_beginner"]
     target_skills = dataset.roles["role_ml_engineer"].required_skills
 
-    result = ucs_plan(profile.initial_skills, target_skills, dataset.courses, profile)
+    result = ucs_plan(profile.initial_skills, target_skills, dataset.courses, profile, max_nodes=50_000)
 
     assert result.valid
     assert set(target_skills).issubset(result.reached_skills)

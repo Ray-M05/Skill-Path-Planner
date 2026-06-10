@@ -111,20 +111,6 @@ PLOTS = [
         "color": "#CCB974",
     },
     {
-        "col": "mc_success_probability",
-        "title": "Probabilidad de exito Monte Carlo por variante",
-        "ylabel": "P(exito) (promedio ± std)",
-        "filename": "mc_success_by_variant.png",
-        "color": "#4C72B0",
-    },
-    {
-        "col": "llm_global_quality",
-        "title": "Calidad global LLM Evaluator por variante",
-        "ylabel": "Calidad global [0-1] (promedio ± std)",
-        "filename": "llm_quality_by_variant.png",
-        "color": "#DD8452",
-    },
-    {
         "col": "final_score",
         "title": "Score final combinado por variante",
         "ylabel": "Score final (promedio ± std)",
@@ -132,6 +118,8 @@ PLOTS = [
         "color": "#4C72B0",
     },
 ]
+
+EXCLUDED_VARIANTS = {"astar_mc", "astar_mc_llm"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -153,8 +141,8 @@ def main(argv: list[str] | None = None) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     data = _load_raw(input_path)
-    variants = sorted(data.keys())
-    print(f"Variantes encontradas: {variants}")
+    variants = [v for v in sorted(data.keys()) if v not in EXCLUDED_VARIANTS]
+    print(f"Variantes graficadas: {variants}  (excluidas: {sorted(EXCLUDED_VARIANTS)})")
     print(f"Generando {len(PLOTS)} graficas en '{output_dir}' ...\n")
 
     for plot_cfg in PLOTS:

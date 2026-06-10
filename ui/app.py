@@ -76,6 +76,19 @@ def _fmt_json(obj: dict) -> str:
     return json.dumps(obj, ensure_ascii=False, indent=2, default=_default)
 
 
+def _plan_dict_for_ui(plan: dict) -> dict:
+    for key in ("expanded_nodes", "max_frontier_size", "validation_errors"):
+        plan.pop(key, None)
+    mc = plan.get("monte_carlo")
+    if isinstance(mc, dict):
+        for key in ("runs", "seed", "params"):
+            mc.pop(key, None)
+    bd = plan.get("score_breakdown")
+    if isinstance(bd, dict):
+        bd.pop("signals", None)
+    return plan
+
+
 def _fmt_score_md(best) -> str:
     if not best.score_breakdown:
         return "_Score breakdown no disponible (plan inválido)._"
@@ -137,7 +150,17 @@ def run_pipeline(
             client = LLMClient(real_settings)
             raw = client.complete_json(GOAL_INTERPRETER_SYSTEM_PROMPT, user_prompt)
 
-        goal = validate_goal_spec(raw, dataset)
+        try:
+            goal = validate_goal_spec(raw, dataset)
+        except ValueError as exc:
+            msg = (
+                "### Objetivo no planificable\n\n"
+                f"No se pudo construir un objetivo a partir de la consulta: **{exc}**\n\n"
+                "Reformula el objetivo hacia un rol o unas "
+                "habilidades que el dataset cubra."
+            )
+            return msg, msg, msg, msg, msg
+
         profile = build_profile_from_goal(goal)
 
         monte_carlo_runs = mc_runs if use_monte_carlo else 0
@@ -160,7 +183,7 @@ def run_pipeline(
         best = ranked[0]
 
         # Tab 1: Plan
-        plan_out = _fmt_json(asdict(best))
+        plan_out = _fmt_json(_plan_dict_for_ui(asdict(best)))
 
         # Tab 2: Puntuación
         score_out = _fmt_score_md(best)
@@ -209,8 +232,15 @@ def run_pipeline(
 
         # Tab 5: Ranking
         if len(ranked) > 1:
+            header = f"**Top {len(ranked)} planes encontrados**"
+        elif k_plans > 1:
+            header = f"**1 plan encontrado** (se solicitaron {k_plans}; no se hallaron más alternativas viables)"
+        else:
+            header = None
+
+        if header is not None:
             ranking_lines = [
-                f"**Top {len(ranked)} planes encontrados**",
+                header,
                 "",
                 "| Rank | Cursos | Semanas | Score |",
                 "|:---:|:---|:---:|:---:|",
@@ -230,8 +260,13 @@ def run_pipeline(
         return err, err, err, err, err
 
 
+_SLIDER_CSS = """
+.solo-barra input[type='number'] { display: none !important; }
+"""
+
+
 def build_ui() -> gr.Blocks:
-    with gr.Blocks(title="Skill Path Planner", theme=THEME) as demo:
+    with gr.Blocks(title="Skill Path Planner") as demo:
 
         gr.Markdown("# Skill Path Planner\n**Planificador inteligente de trayectorias**")
 
@@ -244,7 +279,7 @@ def build_ui() -> gr.Blocks:
                             show_label=False,
                             placeholder=(
                                 "• Describe cual es tu objetivo profesional y habilidades que posees\n"
-                                "• Coloca limites de horas semnas y cantidad de semanas disponibles para mas detalle"
+                                "• Coloca limites de horas semanales y cantidad de semanas disponibles para mas detalle"
                             ),
                             lines=4,
                             max_lines=6,
@@ -283,6 +318,7 @@ def build_ui() -> gr.Blocks:
                                 minimum=1, maximum=3, step=1, value=1,
                                 label="Planes alternativos (K)",
                                 info="Solo A* genera múltiples alternativas",
+                                elem_classes=["solo-barra"],
                             )
 
                             with gr.Row():
@@ -294,7 +330,7 @@ def build_ui() -> gr.Blocks:
                                 mc_runs = gr.Slider(
                                     minimum=50, maximum=500, step=50, value=200,
                                     label="Corridas Monte Carlo",
-                                    visible=False,
+                                    elem_classes=["solo-barra"],
                                 )
 
                             use_evaluate = gr.Checkbox(
@@ -327,11 +363,6 @@ def build_ui() -> gr.Blocks:
                                 ranking_out = gr.Markdown(
                                     value="— Usa K > 1 con A* para ver planes alternativos —"
                                 )
-
-                        gr.Markdown(
-                            "**Roles disponibles:** Analista de Datos · Ingeniero ML  \n"
-                            "**Habilidades:** Python · SQL · Estadística · ML · Deep Learning · MLOps"
-                        )
 
             with gr.Tab("🗺 Mapa de cursos"):
                 gr.Markdown(
@@ -378,11 +409,6 @@ def build_ui() -> gr.Blocks:
             outputs=[graph_plot, courses_table, chips_col],
         )
 
-        use_monte_carlo.change(
-            fn=lambda v: gr.update(visible=v),
-            inputs=use_monte_carlo,
-            outputs=mc_runs,
-        )
 
         run_btn.click(
             fn=run_pipeline,
@@ -398,4 +424,4 @@ def build_ui() -> gr.Blocks:
 
 if __name__ == "__main__":
     app = build_ui()
-    app.launch(inbrowser=True)
+    app.launch(inbrowser=True, theme=THEME, css=_SLIDER_CSS)

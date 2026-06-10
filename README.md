@@ -72,7 +72,7 @@ Flags utiles: `--k 3` (hasta 3 planes alternativos, solo A*), `--evaluate` (eval
 
 ## Dataset generado (dominio Musica)
 
-El sistema incluye un generador de instancias sinteticas con un dominio real y coherente (Musica). Produce un catalogo completo (skills, cursos, roles, perfiles, instancias) que puede usarse directamente con el CLI y el runner de experimentos.
+El sistema incluye un generador de instancias sinteticas con un dominio real y coherente (Musica). Produce un catalogo completo que puede usarse directamente con el CLI y el runner de experimentos.
 
 Generar el dataset:
 
@@ -80,7 +80,8 @@ Generar el dataset:
 py -m src.simulation.instance_generator --seed 42 --n-instances 15 --out data/generated
 ```
 
-El catalogo generado tiene 16 habilidades en 5 pistas (Teoria musical, Instrumento, Composicion, Produccion musical, Canto), 5 roles (Interprete musical, Compositor, Productor musical, Profesor de musica, Cantante) y 6 perfiles de estudiante. Los parametros de cada curso (duracion, dificultad, probabilidad de aprobacion) se muestrean con un generador de numeros pseudoaleatorios sembrado, escalados por el nivel de la habilidad en el grafo de prerrequisitos. La estructura del grafo es curada (no aleatoria) para que cada arista tenga sentido en el dominio.
+Genera **4 archivos** en el directorio de salida: `skills.json`, `courses.json`, `roles.json` e `instances.json`.
+El catalogo generado tiene 16 habilidades en 5 pistas (Teoria musical, Instrumento, Composicion, Produccion musical, Canto), 5 roles (Interprete musical, Compositor, Productor musical, Profesor de musica, Cantante) y 6 perfiles de estudiante (que se reparten entre las instancias). Los parametros de cada curso (duracion, dificultad, probabilidad de aprobacion) se muestrean con un generador de numeros pseudoaleatorios sembrado, escalados por el nivel de la habilidad en el grafo de prerrequisitos. La estructura del grafo es curada (no aleatoria) para que cada arista tenga sentido en el dominio.
 
 Usar el dataset generado con el CLI:
 
@@ -96,24 +97,31 @@ El modo mock funciona con el dataset generado sin API key: el interprete elige e
 
 ## Experimentos
 
-Comparar variantes (greedy, ucs, astar, astar_mc, astar_mc_llm) sobre el dataset principal:
+El flujo son **3 pasos**: correr (genera el CSV crudo) -> resumir (promedios por variante) -> graficar. Las configuraciones viven en `experiments/configs/` (`small`, `medium`, `large`/`base`); `large.json` corre las 5 variantes (greedy, ucs, astar, astar_mc, astar_mc_llm) con Monte Carlo (500 corridas). Los flags de linea de comandos sobreescriben lo que diga el config.
+
+Cada dataset escribe en su propia carpeta para no pisarse.
+
+**Dataset principal** -> `experiments/results/normal/`:
 
 ```bash
-py experiments/run_experiments.py --config experiments/configs/base.json
+py experiments/run_experiments.py --config experiments/configs/large.json --output experiments/results/normal/raw.csv
+py experiments/summarize_results.py --input experiments/results/normal/raw.csv --output experiments/results/normal/summary.csv
+py experiments/plot_results.py --input experiments/results/normal/raw.csv --output-dir experiments/results/normal/plots
 ```
 
-Sobre el dataset generado de Musica:
+**Dataset generado (Musica)** -> `experiments/results/generated/`:
 
 ```bash
-py experiments/run_experiments.py --data-dir data/generated --instances data/generated/instances.json --variants greedy ucs astar astar_mc --output experiments/results/generated_raw_results.csv
+py experiments/run_experiments.py --config experiments/configs/large.json --data-dir data/generated --instances data/generated/instances.json --output experiments/results/generated/raw.csv
+py experiments/summarize_results.py --input experiments/results/generated/raw.csv --output experiments/results/generated/summary.csv
+py experiments/plot_results.py --input experiments/results/generated/raw.csv --output-dir experiments/results/generated/plots
 ```
 
-Resumir resultados y generar graficas:
+Notas:
 
-```bash
-py experiments/summarize_results.py --input experiments/results/raw_results.csv
-py experiments/plot_results.py
-```
+- Solo `run_experiments.py` usa `--config`; `summarize_results.py` y `plot_results.py` toman `--input` y `--output`/`--output-dir`.
+- **Plots**: se generan 5 graficas comparando solo los planificadores `greedy`, `ucs` y `astar` (tasa de exito, tiempo, nodos expandidos, semanas totales y score final). `astar_mc` y `astar_mc_llm` se excluyen de los graficos porque usan el mismo plan que `astar`; sus metricas propias (Monte Carlo, calidad LLM) quedan en el `summary.csv`.
+- **Score final**: un plan invalido/fallido cuenta como 0 en el promedio (penaliza fallar), para que una variante que resuelve menos instancias no infle su media.
 
 ## Interfaz grafica (UI)
 

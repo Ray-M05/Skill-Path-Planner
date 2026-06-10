@@ -12,7 +12,7 @@ from .dataset.loader import load_dataset
 from .dataset.resolver import normalize_text
 from .llm.client import LLMClient
 from .llm.evaluator import evaluate_plan_with_llm
-from .llm.interpreter import resolve_role, validate_goal_spec
+from .llm.interpreter import CUSTOM_ROLE_PREFIX, resolve_role, validate_goal_spec
 from .llm.prompts import GOAL_INTERPRETER_SYSTEM_PROMPT, build_goal_interpreter_user_prompt
 from .metrics import extract_metrics_row, rows_to_csv_string
 from .models import Dataset, GoalSpec, PlanResult, StudentProfile
@@ -121,35 +121,48 @@ def _match_role_id(user_text: str, dataset: Dataset) -> tuple[str | None, float]
     return best_id, best_score
 
 
+def _slug_from_query(user_text: str) -> str:
+    """Construye un slug a partir de las palabras significativas de la consulta,
+    para nombrar el rol a medida cuando no se reconoce ninguno (p. ej. 'astronauta')."""
+    tokens = [tok for tok in normalize_text(user_text).split() if tok not in _GOAL_STOPWORDS]
+    return "_".join(tokens)
+
+
 def build_mock_goal_response(user_text: str, dataset: Dataset) -> dict[str, Any]:
     """Interprete mock agnostico al dataset: elige el rol existente mas parecido por
-    nombre y detecta skills mencionadas por nombre/alias. No crea roles a medida."""
-    role_id, score = _match_role_id(user_text, dataset)
-    if role_id is None:
-        role_id = next(iter(dataset.roles))  # fallback determinista
-        confidence = 0.3
-    elif score >= 1.0:
-        confidence = 0.85
-    else:
-        confidence = 0.6
-
+    nombre y detecta skills mencionadas por nombre/alias."""
     mentioned_skill_ids: set[str] = set()
     for skill in dataset.skills.values():
         candidates = [skill.name, *skill.aliases]
         if any(_skill_is_mentioned(user_text, candidate) for candidate in candidates):
             mentioned_skill_ids.add(skill.id)
 
-    role = dataset.roles[role_id]
-    return {
-        "role_id": role_id,
+    base = {
         "role_name": None,
-        "target_skill_ids": sorted(role.required_skills),
         "initial_skill_ids": sorted(mentioned_skill_ids),
         "mentioned_skill_ids": sorted(mentioned_skill_ids),
         "constraints": _extract_constraints(user_text),
         "ignored_constraints": _extract_ignored_constraints(user_text),
         "unknown_skill_mentions": [],
-        "confidence": confidence,
+    }
+
+    role_id, score = _match_role_id(user_text, dataset)
+    if role_id is None:
+        # Ningun rol reconocible: rol a medida sin objetivo -> no planificable.
+        slug = _slug_from_query(user_text) or "desconocido"
+        return {
+            **base,
+            "role_id": f"{CUSTOM_ROLE_PREFIX}{slug}",
+            "target_skill_ids": [],
+            "confidence": 0.1,
+        }
+
+    role = dataset.roles[role_id]
+    return {
+        **base,
+        "role_id": role_id,
+        "target_skill_ids": sorted(role.required_skills),
+        "confidence": 0.85 if score >= 1.0 else 0.6,
     }
 
 
@@ -300,7 +313,16 @@ def run_cli(args: argparse.Namespace) -> int:
 
     print(_section(f"RESPUESTA CRUDA DEL LLM ({client_description})", _pretty_json(raw_goal_spec)))
 
-    goal = validate_goal_spec(raw_goal_spec, dataset)
+    try:
+        goal = validate_goal_spec(raw_goal_spec, dataset)
+    except ValueError as exc:
+        print(_section(
+            "Objetivo no planificable",
+            f"No se pudo construir un objetivo a partir de la consulta: {exc}\n\n"
+            "Reformula el objetivo hacia un rol o unas "
+            "habilidades que el dataset cubra.",
+        ))
+        return 1
     print(_section("GOALSPEC VALIDADO", _pretty_json(asdict(goal))))
 
     validation_profile = build_profile_from_goal(goal)

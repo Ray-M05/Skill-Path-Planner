@@ -72,15 +72,6 @@ class SearchState:
 
 
 @dataclass
-class ScheduleResult:
-    course_to_period: dict[str, int]
-    period_to_courses: dict[int, list[str]]
-    total_periods: int
-    feasible: bool
-    violations: list[str]
-
-
-@dataclass
 class PlanResult:
     planner_name: str
     course_ids: list[str]
@@ -92,7 +83,6 @@ class PlanResult:
     runtime_seconds: float
     valid: bool = False
     validation_errors: list[str] = field(default_factory=list)
-    schedule: ScheduleResult | None = None
     monte_carlo: dict[str, Any] | None = None
     llm_evaluation: dict[str, Any] | None = None
     final_score: float | None = None

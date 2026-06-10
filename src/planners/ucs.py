@@ -7,14 +7,14 @@ import time
 from ..models import Course, PlanResult, SearchState, StudentProfile
 from .common import (
     apply_course,
-    build_skill_producers,
     is_applicable,
     is_goal,
     make_failure_result,
     make_plan_result,
-    prerequisite_closure,
     violates_profile_limits,
 )
+
+_DEFAULT_MAX_NODES = 5000
 
 
 def path_cost(state: SearchState) -> float:
@@ -30,11 +30,11 @@ def ucs_plan(
     target_skills: set[str],
     courses: dict[str, Course],
     profile: StudentProfile,
+    max_nodes: int = 0,
 ) -> PlanResult:
     start_time = time.perf_counter()
-    # Poda: cierre de prerequisitos de los objetivos
-    producers = build_skill_producers(courses)
-    needed_closure = prerequisite_closure(set(target_skills), courses, producers)
+    # Dijkstra 
+    cap = max_nodes if max_nodes > 0 else _DEFAULT_MAX_NODES
     initial_state = SearchState(
         skills=frozenset(initial_skills),
         taken_courses=(),
@@ -48,6 +48,15 @@ def ucs_plan(
     max_frontier_size = 1
 
     while frontier:
+        if expanded_nodes >= cap:
+            return make_failure_result(
+                "ucs",
+                initial_skills,
+                expanded_nodes,
+                max_frontier_size,
+                start_time,
+                f"UCS no encontro plan dentro del limite de {cap} nodos.",
+            )
         max_frontier_size = max(max_frontier_size, len(frontier))
         _, _, state = heapq.heappop(frontier)
         state_cost = path_cost(state)
@@ -70,10 +79,7 @@ def ucs_plan(
                 start_time,
             )
 
-        needed_now = needed_closure - set(state.skills)
         for course in courses.values():
-            if course.outcomes.isdisjoint(needed_now):
-                continue
             if not is_applicable(course, state):
                 continue
             if violates_profile_limits(course, state, profile):

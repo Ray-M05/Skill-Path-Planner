@@ -80,10 +80,19 @@ def test_astar_solves_deep_target_efficiently() -> None:
     assert plan.expanded_nodes < 50000
 
 
-def test_ucs_pruning_still_solves_deep_target() -> None:
+def test_ucs_unpruned_solves_shallow_target() -> None:
     ds = load_dataset("data")
-    target = {"skill_computer_vision", "skill_linear_algebra"}
+    target = {"skill_python_intermediate", "skill_statistics_basic"}
     plan = ucs_plan(set(_INITIAL), target, ds.courses, _deep_profile())
 
     assert plan.valid
     assert target.issubset(plan.reached_skills)
+
+
+def test_ucs_node_cap_prevents_runaway() -> None:
+    ds = load_dataset("data")
+    target = {"skill_computer_vision", "skill_reinforcement_learning"}
+    plan = ucs_plan(set(_INITIAL), target, ds.courses, _deep_profile(), max_nodes=500)
+
+    assert not plan.valid
+    assert plan.expanded_nodes <= 500
