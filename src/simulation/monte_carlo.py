@@ -4,7 +4,6 @@ import math
 from dataclasses import dataclass
 from typing import Any
 import numpy as np
-
 from ..models import Course, PlanResult, StudentProfile
 
 
@@ -21,7 +20,6 @@ class MonteCarloParams:
 
 
 def _wilson_ci_95(successes: int, n: int) -> tuple[float, float]:
-    """Intervalo de confianza de Wilson al 95% para una proporción."""
     if n == 0:
         return 0.0, 0.0
     z = 1.96

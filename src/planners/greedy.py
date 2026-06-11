@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-
 from ..models import Course, PlanResult, SearchState, StudentProfile
 from .common import (
     apply_course,

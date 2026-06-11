@@ -3,7 +3,6 @@ from __future__ import annotations
 import heapq
 import itertools
 import time
-
 from ..models import Course, PlanResult, SearchState, StudentProfile
 from .common import (
     apply_course,
@@ -15,7 +14,6 @@ from .common import (
 )
 
 _DEFAULT_MAX_NODES = 5000
-
 
 def path_cost(state: SearchState) -> float:
     return (

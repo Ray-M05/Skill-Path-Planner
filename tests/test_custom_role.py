@@ -1,4 +1,3 @@
-"""Tests del rol a medida (custom_) como fallback del interpreter LLM."""
 from __future__ import annotations
 
 import pytest
@@ -104,7 +103,6 @@ def test_resolve_role_deslugs_name_when_role_name_missing() -> None:
 
     role = resolve_role(goal, dataset)
 
-    # custom_disenador_de_videojuegos -> "Disenador de videojuegos"
     assert role.name == "Disenador de videojuegos"
 
 
@@ -123,7 +121,6 @@ def test_scoring_with_custom_role_gives_full_required_coverage() -> None:
 
     _, breakdown = compute_score_with_breakdown(plan, role, profile)
 
-    # required = w_required * 1.0 (sin MC ni LLM => w_required = 0.65); recomendadas vacias => 0
     assert breakdown["required"] == 0.65
     assert breakdown["recommended"] == 0.0
 

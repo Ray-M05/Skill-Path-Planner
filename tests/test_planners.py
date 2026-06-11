@@ -76,10 +76,7 @@ def test_astar_h_cost_is_positive_and_admissible_units() -> None:
         {"skill_python_intermediate", "skill_statistics_basic"},
         dataset.courses,
     )
-    # h(n) debe ser > 0 cuando faltan habilidades
     assert value > 0
-    # h(n) está ahora en las mismas unidades que g(n): incluye semanas y dificultad,
-    # por lo que debe ser mayor que el simple conteo de cursos (2)
     min_duration = min(c.duration_weeks for c in dataset.courses.values())
     assert value >= min_duration
 

@@ -1,22 +1,13 @@
-"""Tests para max_nodes, score_breakdown, LLM cache y recommended_skills en A*."""
 from __future__ import annotations
 
 import json
-
 import pytest
-
 from src.config import Settings
 from src.dataset.loader import load_dataset
 from src.llm.client import LLMClient
 from src.models import PlanResult, StudentProfile
 from src.planners.astar import astar_k_plans, astar_plan
 from src.scoring import compute_score_with_breakdown
-
-
-# ---------------------------------------------------------------------------
-# A* max_nodes
-# ---------------------------------------------------------------------------
-
 
 def test_astar_max_nodes_zero_means_no_limit() -> None:
     dataset = load_dataset("data")
@@ -29,7 +20,6 @@ def test_astar_max_nodes_zero_means_no_limit() -> None:
 
 
 def test_astar_max_nodes_one_returns_no_plan() -> None:
-    """Con max_nodes=1 el árbol colapsa antes de encontrar meta; debe devolver fallo."""
     dataset = load_dataset("data")
     profile = dataset.profiles["profile_beginner"]
     role = dataset.roles["role_ml_engineer"]
@@ -56,7 +46,6 @@ def test_astar_k_plans_max_nodes_limits_expansion() -> None:
 
 
 def test_astar_max_nodes_sufficient_finds_plan() -> None:
-    """Con un límite generoso el planner debe encontrar el plan igual que sin límite."""
     dataset = load_dataset("data")
     profile = dataset.profiles["profile_beginner"]
     role = dataset.roles["role_data_analyst"]
@@ -64,11 +53,6 @@ def test_astar_max_nodes_sufficient_finds_plan() -> None:
     plan = astar_plan(profile.initial_skills, role.required_skills, dataset.courses, profile, max_nodes=10000)
 
     assert plan.valid
-
-
-# ---------------------------------------------------------------------------
-# score_breakdown
-# ---------------------------------------------------------------------------
 
 
 def test_compute_score_with_breakdown_returns_tuple() -> None:
@@ -167,11 +151,6 @@ def test_score_breakdown_signals_flags_no_mc_no_llm() -> None:
     assert breakdown["signals"]["w_required"] == pytest.approx(0.65, abs=1e-4)
 
 
-# ---------------------------------------------------------------------------
-# LLM cache
-# ---------------------------------------------------------------------------
-
-
 def test_llm_cache_write_and_read(tmp_path) -> None:
     settings = Settings(llm_provider="gemini", llm_cache=True)
     client = LLMClient(settings=settings, cache_dir=tmp_path)
@@ -226,7 +205,6 @@ def test_llm_cache_different_prompts_different_keys() -> None:
 
     assert k1 != k2
 
-# A* recommended_skills bonus
 def test_astar_with_recommended_covers_more_optional_skills() -> None:
     """Con recommended_skills activo, A* debe incluir al menos un curso que cubra
     una skill recomendada cuando existe un camino que lo permite sin coste extra."""
@@ -248,14 +226,12 @@ def test_astar_with_recommended_covers_more_optional_skills() -> None:
         profile,
     )
 
-    # Ambos planes deben ser válidos
     assert plan_with.valid
     assert plan_without.valid
 
     covered_with = len(role.recommended_skills & plan_with.reached_skills)
     covered_without = len(role.recommended_skills & plan_without.reached_skills)
 
-    # Con el bonus, el plan debe cubrir al menos las mismas skills recomendadas
     assert covered_with >= covered_without
 
 

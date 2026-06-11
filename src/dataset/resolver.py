@@ -4,7 +4,6 @@ import difflib
 import re
 import unicodedata
 from typing import Any
-
 from ..models import Role, Skill
 
 

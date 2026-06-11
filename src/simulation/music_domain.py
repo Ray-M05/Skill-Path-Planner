@@ -1,14 +1,9 @@
 """Plantilla del dominio Musica para el generador de instancias.
-
-Define una ontologia curada y coherente: pistas (tracks) con niveles (tiers) cuyas
+Define un dominio curado y coherente: pistas (tracks) con niveles (tiers) cuyas
 aristas de prerrequisito tienen sentido real en el dominio. El generador instancia
 estos datos y muestrea con sembrado solo los params de cada curso
 (duracion, horas, dificultad, probabilidad de aprobar); la estructura del grafo no
 es aleatoria, por lo que el grafo resultante es honesto y entendible.
-
-Invariante clave: toda skill es producible por algun curso. Las skills fundamentales
-(tier 0) se aprenden desde cero (prerequisites vacios), de modo que cualquier rol es
-alcanzable partiendo sin conocimientos previos.
 """
 from __future__ import annotations
 
@@ -165,7 +160,7 @@ PROFILES: tuple[ProfileSpec, ...] = (
 )
 
 
-# Frases naturales para los textos de objetivo de las instancias generadas.
+# Frases naturales para los textos de objetivo de las instancias generadas
 GOAL_TEMPLATES: tuple[str, ...] = (
     "Quiero ser {role_name}.",
     "Me gustaria dedicarme a ser {role_name}.",

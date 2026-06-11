@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import io
-
 from src.metrics import _CSV_FIELDS, csv_fields, extract_metrics_row, rows_to_csv_string
 from src.models import PlanResult
 
@@ -31,11 +30,6 @@ def _make_plan(
     )
 
 
-# ---------------------------------------------------------------------------
-# csv_fields
-# ---------------------------------------------------------------------------
-
-
 def test_csv_fields_returns_expected_columns() -> None:
     fields = csv_fields()
     assert "instance_id" in fields
@@ -44,11 +38,6 @@ def test_csv_fields_returns_expected_columns() -> None:
     assert "llm_global_quality" in fields
     assert "final_score" in fields
     assert len(fields) == len(_CSV_FIELDS)
-
-
-# ---------------------------------------------------------------------------
-# extract_metrics_row
-# ---------------------------------------------------------------------------
 
 
 def test_extract_metrics_row_has_all_fields() -> None:
@@ -158,11 +147,6 @@ def test_extract_metrics_row_invalid_plan_score_is_zero() -> None:
     row = extract_metrics_row(plan)
 
     assert row["final_score"] == 0.0
-
-
-# ---------------------------------------------------------------------------
-# rows_to_csv_string
-# ---------------------------------------------------------------------------
 
 
 def test_rows_to_csv_string_has_header() -> None:

@@ -59,7 +59,6 @@ class GoalSpec:
     ignored_constraints: list[str]
     unknown_skill_mentions: list[str]
     confidence: float
-    # Nombre legible cuando role_id es un rol a medida (prefijo "custom_"); None para roles del catalogo
     role_name: str | None = None
 
 

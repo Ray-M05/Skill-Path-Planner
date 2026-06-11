@@ -1,4 +1,4 @@
-"""Agrega el CSV de resultados crudos y produce un resumen por variante."""
+# Agrega el CSV de resultados crudos y produce un resumen por variante
 from __future__ import annotations
 
 import argparse

@@ -1,10 +1,8 @@
-"""Tests del generador de instancias del dominio Musica."""
 from __future__ import annotations
 
 import re
 import networkx as nx
 import pytest
-
 from src.dataset.loader import load_dataset, profile_from_instance
 from src.models import StudentProfile
 from src.planners.ucs import ucs_plan
@@ -18,8 +16,6 @@ from src.simulation.music_domain import PROFILES, ROLES, SKILLS
 
 _CFG = GenerationConfig(seed=42, n_instances=10)
 
-# Perfil generoso equivalente al que arma el CLI desde una consulta natural sin
-# restricciones explicitas (initial vacio, presupuestos amplios).
 _GENEROUS = StudentProfile(
     id="consulta", initial_skills=frozenset(), max_weeks=999, max_weekly_hours=999, risk_tolerance=0.5
 )
@@ -27,7 +23,6 @@ _GENEROUS = StudentProfile(
 
 @pytest.fixture(scope="module")
 def dataset():
-    """Genera el dataset una sola vez y lo reutiliza."""
     return generate_dataset(_CFG)
 
 
@@ -40,7 +35,6 @@ def test_sizes_match_template(dataset):
 
 
 def test_names_are_not_abstract(dataset):
-    """Los nombres son reales (de la plantilla), no 'Rol 0'/'Habilidad 3'/'Curso 7'."""
     abstract = re.compile(r"^(Rol|Habilidad|Curso)\s+\d+$")
     for skill in dataset.skills.values():
         assert not abstract.match(skill.name)
@@ -51,7 +45,6 @@ def test_names_are_not_abstract(dataset):
 
 
 def test_prerequisite_graph_is_acyclic(dataset):
-    """El grafo prereq -> outcome inducido por los cursos no tiene ciclos."""
     graph = nx.DiGraph()
     for course in dataset.courses.values():
         for prereq in course.prerequisites:
@@ -61,7 +54,6 @@ def test_prerequisite_graph_is_acyclic(dataset):
 
 
 def test_graph_is_coherent(dataset):
-    """Toda arista referencia skills del dataset y toda skill es producible."""
     producible: set[str] = set()
     for course in dataset.courses.values():
         producible.update(course.outcomes)
@@ -72,13 +64,11 @@ def test_graph_is_coherent(dataset):
 
 
 def test_every_role_reachable_from_zero(dataset):
-    """Toda consulta natural desde cero (sin skills previas) es resoluble por rol."""
     for role in dataset.roles.values():
         assert _feasible(set(), set(role.required_skills), dataset.courses, _GENEROUS)
 
 
 def test_generated_instances_are_solvable(dataset):
-    """Cada instancia generada admite un plan valido."""
     assert dataset.instances
     for instance in dataset.instances:
         profile = profile_from_instance(instance)
@@ -93,7 +83,6 @@ def test_generated_instances_are_solvable(dataset):
 
 
 def test_seed_is_reproducible():
-    """Misma semilla produce dataset identico; semillas distintas, distinto."""
     a = generate_dataset(_CFG)
     b = generate_dataset(_CFG)
     assert a.instances == b.instances
@@ -104,7 +93,6 @@ def test_seed_is_reproducible():
 
 
 def test_generated_dataset_loads_without_errors(dataset, tmp_path):
-    """El dataset escrito pasa load_dataset (validaciones del loader) sin errores."""
     out = write_dataset(dataset, tmp_path / "generated")
     loaded = load_dataset(out)
     assert len(loaded.skills) == len(SKILLS)

@@ -7,9 +7,7 @@ import itertools
 import json
 from dataclasses import dataclass
 from pathlib import Path
-
 import numpy as np
-
 from ..models import Course, Role, SearchState, Skill, StudentProfile
 from ..planners.common import (
     apply_course,
@@ -40,7 +38,6 @@ class GeneratedDataset:
 
 # Generadores de cada entidad
 def generate_skills() -> dict[str, Skill]:
-    """Skills con nombres y alias reales tomados de la plantilla del dominio."""
     return {
         spec.id: Skill(
             id=spec.id,
@@ -56,8 +53,8 @@ def _make_course(spec: SkillSpec, rng: np.random.Generator) -> Course:
     """Un curso que produce la skill `spec`, con parametros muestreados y escalados
     por nivel (mas avanzado => mas largo, mas dificil, menor probabilidad de aprobar)."""
     tier = spec.tier
-    duration = int(rng.integers(3, 6)) + tier  # tier0: 3-5 ... tier4: 7-9
-    weekly_hours = int(rng.integers(3, 7))  # 3..6 (no excede los perfiles)
+    duration = int(rng.integers(3, 6)) + tier
+    weekly_hours = int(rng.integers(3, 7))
     difficulty = round(min(0.9, 0.2 + 0.12 * tier + float(rng.uniform(0.0, 0.1))), 2)
     pass_prob = round(max(0.6, 0.93 - 0.04 * tier - float(rng.uniform(0.0, 0.05))), 2)
     return Course(
@@ -107,8 +104,6 @@ def generate_profiles() -> dict[str, StudentProfile]:
 def _reachable_skills(
     initial: set[str], courses: dict[str, Course], max_weekly_hours: int
 ) -> set[str]:
-    """Cierre de skills alcanzables (prereqs + horas semanales), ignorando el
-    presupuesto de semanas. Pre-chequeo polinomial y barato de factibilidad."""
     skills = set(initial)
     changed = True
     while changed:
@@ -131,7 +126,7 @@ def _feasible(
     profile: StudentProfile,
     max_nodes: int = _ORACLE_MAX_NODES,
 ) -> bool:
-    """Oraculo de factibilidad: existe un plan valido dentro de las restricciones
+    """Factibilidad: existe un plan valido dentro de las restricciones
     del perfil (prereqs, horas semanales, semanas maximas y cobertura del objetivo).
     """
     start = SearchState(skills=frozenset(initial), taken_courses=(), weeks_used=0, difficulty_sum=0.0)
@@ -173,8 +168,6 @@ def generate_instances(
     profiles: dict[str, StudentProfile],
     rng: np.random.Generator,
 ) -> list[dict]:
-    """Muestrea (perfil, rol) y conserva solo combinaciones resolubles.
-    """
     instances: list[dict] = []
     role_ids = list(roles)
     profile_ids = list(profiles)
@@ -187,22 +180,20 @@ def generate_instances(
         initial = set(profile.initial_skills)
         for rid in role_ids:
             target = set(roles[rid].required_skills)
-            # Fase 1: cierre barato; descarta objetivos no alcanzables sin busqueda.
+            # descarta objetivos no alcanzables sin busqueda
             if not target <= _reachable_skills(initial, courses, profile.max_weekly_hours):
                 continue
-            # Fase 2: greedy confirma factibilidad rapido en el caso comun.
+            # greedy confirma factibilidad rapido en el caso comun
             if greedy_plan(initial, target, courses, profile).valid:
                 feasible.append((pid, rid))
                 continue
-            # Fase 3: si greedy falla, UCS acotado como respaldo.
+            # si greedy falla, UCS acotado como respaldo
             if _feasible(initial, target, courses, profile):
                 feasible.append((pid, rid))
 
     if not feasible:
         return instances
 
-    # Recorrer las combinaciones viables en round-robin para cubrirlas
-    # todas antes de repetir; el texto del objetivo varia segun la plantilla.
     order = rng.permutation(len(feasible))
     for i in range(cfg.n_instances):
         pid, rid = feasible[int(order[i % len(feasible)])]
@@ -222,7 +213,7 @@ def generate_instances(
 
 
 def generate_dataset(cfg: GenerationConfig) -> GeneratedDataset:
-    """Orquesta la generacion completa con un unico sembrado (reproducible)."""
+    """Orquesta la generacion completa con un unico sembrado"""
     rng = np.random.default_rng(cfg.seed)
     skills = generate_skills()
     courses = generate_courses(rng)
@@ -261,7 +252,6 @@ def _role_to_dict(r: Role) -> dict:
 
 
 def _profile_to_student(p: StudentProfile) -> dict:
-    """Serializa un perfil como bloque 'student' embebido en una instancia."""
     return {
         "label": p.id,
         "initial_skills": sorted(p.initial_skills),
@@ -276,7 +266,6 @@ def _dump(path: Path, data) -> None:
 
 
 def write_dataset(ds: GeneratedDataset, out_dir: str | Path) -> Path:
-    """Escribe el dataset con nombres canonicos (compatibles con load_dataset)."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     _dump(out / "skills.json", [_skill_to_dict(s) for s in ds.skills.values()])

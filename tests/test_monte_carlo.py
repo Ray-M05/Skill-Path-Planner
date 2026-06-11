@@ -49,8 +49,6 @@ def test_monte_carlo_is_reproducible_with_fixed_seed() -> None:
 
 
 def test_easy_courses_have_higher_success_probability_than_hard_courses() -> None:
-    # max_failed_courses=0: cualquier fallo abandona el plan inmediatamente,
-    # lo que asegura que la diferencia de p_pass entre cursos se refleje en success_probability
     params = MonteCarloParams(max_failed_courses=0)
     profile = StudentProfile(
         id="profile_test",

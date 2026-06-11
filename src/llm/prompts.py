@@ -23,7 +23,6 @@ Reglas obligatorias:
 12. No expliques nada fuera del JSON.
 """
 
-
 def _to_pretty_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True)
 
@@ -63,7 +62,6 @@ def build_goal_interpreter_user_prompt(
 
 
 # Evaluador de trayectorias
-
 PLAN_EVALUATOR_SYSTEM_PROMPT = """Eres un evaluador de calidad de trayectorias profesionales de aprendizaje.
 
 Reglas obligatorias:

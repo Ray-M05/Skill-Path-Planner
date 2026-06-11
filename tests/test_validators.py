@@ -1,7 +1,6 @@
 from src.dataset.loader import load_dataset
 from src.validators import validate_plan
 
-
 def test_validate_plan_accepts_valid_ml_engineer_path() -> None:
     dataset = load_dataset("data")
     profile = dataset.profiles["profile_beginner"]

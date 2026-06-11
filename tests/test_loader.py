@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
-
 import pytest
-
 from src.dataset.loader import (
     load_courses,
     load_dataset,

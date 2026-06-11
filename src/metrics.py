@@ -30,7 +30,6 @@ def extract_metrics_row(
     instance_id: str = "",
     target_skill_ids: set[str] | frozenset[str] | None = None,
 ) -> dict[str, Any]:
-    # Extrae una fila de métricas de un PlanResult para exportar a CSV.
     mc = plan.monte_carlo or {}
     llm = plan.llm_evaluation or {}
 
@@ -73,7 +72,6 @@ def extract_metrics_row(
 
 
 def rows_to_csv_string(rows: list[dict[str, Any]]) -> str:
-    """Serializa filas de métricas a string CSV con cabecera."""
     buf = io.StringIO()
     writer = csv.DictWriter(buf, fieldnames=_CSV_FIELDS, extrasaction="ignore")
     writer.writeheader()

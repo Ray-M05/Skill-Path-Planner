@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-
 from ..models import Dataset, GoalSpec, PlanResult, Role, StudentProfile
 
 if TYPE_CHECKING:
@@ -47,12 +46,11 @@ def build_mock_evaluation_response(
     """Evaluación determinista para modo mock, sin llamada LLM."""
     courses = [dataset.courses[cid] for cid in plan.course_ids if cid in dataset.courses]
 
-    # Alineación con el objetivo: fracción de required_skills alcanzadas
     goal_alignment = (
         len(plan.reached_skills & role.required_skills) / max(len(role.required_skills), 1)
     )
 
-    # Coherencia pedagógica: los cursos respetan el orden de prerrequisitos acumulado
+    # los cursos respetan el orden de prerrequisitos acumulado
     skills_so_far: set[str] = set(profile.initial_skills)
     violations = 0
     for course in courses:
@@ -61,15 +59,13 @@ def build_mock_evaluation_response(
         skills_so_far |= course.outcomes
     pedagogical_coherence = max(0.0, 1.0 - violations / max(len(courses), 1))
 
-    # Realismo del perfil: cursos dentro de los límites de horas semanales
+    # cursos dentro de los límites de horas semanales
     overloaded = sum(1 for c in courses if c.weekly_hours > profile.max_weekly_hours)
     profile_realism = max(0.0, 1.0 - overloaded / max(len(courses), 1))
 
-    # No redundancia: outcomes únicos sobre total de outcomes del plan
     all_outcomes: list[str] = [o for c in courses for o in c.outcomes]
     non_redundancy = len(set(all_outcomes)) / max(len(all_outcomes), 1)
 
-    # Valor profesional: cobertura de recommended_skills del rol
     if role.recommended_skills:
         professional_value = (
             len(plan.reached_skills & role.recommended_skills) / len(role.recommended_skills)
@@ -129,8 +125,6 @@ def evaluate_plan_with_llm(
     llm_client: LLMClient,
     use_mock: bool = False,
 ) -> dict[str, Any]:
-    """Evalúa cualitativamente un plan usando el LLM Evaluator.
-    """
     if not plan.valid or not plan.course_ids:
         return {
             "skipped": True,

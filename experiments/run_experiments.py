@@ -1,4 +1,4 @@
-"""Ejecuta variantes del experimento sobre las instancias y guarda un CSV de metricas."""
+# Ejecuta variantes del experimento sobre las instancias y guarda un CSV de metricas
 from __future__ import annotations
 
 import argparse

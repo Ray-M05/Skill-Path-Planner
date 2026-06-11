@@ -1,6 +1,5 @@
 from src.models import Course, Dataset, PlanResult, Role, SearchState, Skill, StudentProfile
 
-
 def test_dataclasses_can_be_instantiated() -> None:
     skill = Skill(
         id="skill_python_basic",

@@ -1,11 +1,8 @@
 """Vista de grafo de precedencia de cursos.
-
 Construye un grafo dirigido donde los nodos son cursos y existe una arista
 A -> B si el curso B requiere una habilidad que produce el curso A.  Cada nodo
 recibe un color pastel unico; todas sus aristas salientes comparten ese mismo
 color para que sea facil trazar de donde viene cada dependencia.
-
-Siempre se recarga el dataset desde disco al invocar `build_course_graph_figure`.
 """
 
 from __future__ import annotations
@@ -15,7 +12,6 @@ import random
 import sys
 import textwrap
 from pathlib import Path
-
 import matplotlib
 matplotlib.use("agg")
 import matplotlib.patches as mpatches
@@ -41,13 +37,7 @@ PALETTE = {
 }
 
 def _assign_node_colors(graph: nx.DiGraph, seed: int = 42) -> dict[str, str]:
-    """Asigna un color pastel unico a cada nodo del grafo.
-
-    Distribuye los matices uniformemente en el espacio HSV y luego los mezcla
-    con una semilla fija para que el resultado sea estable entre recargas pero
-    visualmente 'aleatorio'.  Saturacion baja (0.38) y brillo alto (0.93)
-    producen colores pasteles que contrastan bien con texto oscuro.
-    """
+    # Asigna un color pastel unico a cada nodo del grafo.
     nodes = list(graph.nodes())
     n = len(nodes)
     hues = [i / max(n, 1) for i in range(n)]
@@ -76,7 +66,6 @@ ROLE_STYLE = {
     },
 }
 
-# Dimensiones del nodo (unidades del eje)
 NODE_W = 2.8
 NODE_H = 0.82
 NODE_HW = NODE_W / 2  # half-width
@@ -132,7 +121,7 @@ def _layered_positions(
         by_layer.setdefault(layer, []).append(node)
 
     x_spacing = 4.2
-    y_spacing = 1.80  # suficiente para nodo + badge sin solapamiento
+    y_spacing = 1.80 
     positions: dict[str, tuple[float, float]] = {}
     for layer, nodes in by_layer.items():
         nodes_sorted = sorted(nodes, key=lambda n: graph.nodes[n]["course"].name)
@@ -146,12 +135,6 @@ def _layered_positions(
 def _compute_ports(
     graph: nx.DiGraph, positions: dict[str, tuple[float, float]]
 ) -> tuple[dict[str, dict[str, float]], dict[str, dict[str, float]]]:
-    """Distribuye los puntos de conexion a lo largo del borde del nodo.
-
-    Para cada nodo, ordena sus vecinos por posicion y y les asigna un offset
-    vertical dentro del borde del nodo.  Esto separa las flechas cuando un
-    nodo tiene muchas entradas o salidas y evita que se solapen.
-    """
     out_ports: dict[str, dict[str, float]] = {}
     in_ports: dict[str, dict[str, float]] = {}
     spread = NODE_HH * 1.5  # rango vertical total para distribuir puertos
@@ -280,7 +263,6 @@ def _draw_edges(
         if ratio < 0.08:
             rad = 0.0
         else:
-            # Curvatura proporcional a la pendiente, maxima 0.35
             rad = min(0.20 * ratio, 0.35) * (1 if dy > 0 else -1)
 
         arrow = mpatches.FancyArrowPatch(
@@ -330,7 +312,6 @@ def _draw_legend(ax, dataset: Dataset) -> None:
 
 
 def _component_layout(sg: nx.DiGraph) -> dict:
-    """Calcula layers, positions y ports para un subgrafo (componente)."""
     layers = _assign_layers(sg)
     positions = _layered_positions(sg, layers)
     out_ports, in_ports = _compute_ports(sg, positions)
@@ -349,8 +330,7 @@ def _component_layout(sg: nx.DiGraph) -> dict:
 
 def build_course_graph_figure(data_dir: str = "data") -> Figure:
     """Construye y devuelve la figura del grafo de precedencia de cursos.
-
-    El grafo se divide en componentes conexas debiles (de mayor a menor);
+    El grafo se divide en componentes conexas (de mayor a menor);
     cada componente se dibuja en su propio subplot para mayor claridad.
     Recarga el dataset desde disco en cada llamada.
     """

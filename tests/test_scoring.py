@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from src.dataset.loader import load_dataset
 from src.models import PlanResult, Role, StudentProfile
 from src.scoring import (
@@ -58,11 +57,6 @@ def _make_plan(
     )
 
 
-# ---------------------------------------------------------------------------
-# recommended_coverage_score
-# ---------------------------------------------------------------------------
-
-
 def test_recommended_coverage_full_coverage() -> None:
     assert recommended_coverage_score({"a", "b", "c"}, frozenset({"a", "b"})) == 1.0
 
@@ -78,11 +72,6 @@ def test_recommended_coverage_no_recommended() -> None:
 
 def test_recommended_coverage_no_overlap() -> None:
     assert recommended_coverage_score({"x"}, frozenset({"a", "b"})) == 0.0
-
-
-# ---------------------------------------------------------------------------
-# required_coverage_score
-# ---------------------------------------------------------------------------
 
 
 def test_required_coverage_full() -> None:
@@ -109,11 +98,6 @@ def test_valid_plan_score_is_non_negative_without_mc_or_llm() -> None:
     assert score >= 0.0
 
 
-# ---------------------------------------------------------------------------
-# normalize_value
-# ---------------------------------------------------------------------------
-
-
 def test_normalize_value_within_range() -> None:
     assert normalize_value(5.0, 10.0) == 0.5
 
@@ -128,11 +112,6 @@ def test_normalize_value_zero_max() -> None:
 
 def test_normalize_value_exact_max() -> None:
     assert normalize_value(10.0, 10.0) == 1.0
-
-
-# ---------------------------------------------------------------------------
-# compute_final_score
-# ---------------------------------------------------------------------------
 
 
 def test_compute_final_score_returns_float() -> None:
@@ -223,12 +202,6 @@ def test_compute_final_score_skipped_llm_treated_as_zero() -> None:
 
     assert compute_final_score(plan_no_llm, role, profile) == compute_final_score(plan_skipped, role, profile)
 
-
-# ---------------------------------------------------------------------------
-# rank_plans
-# ---------------------------------------------------------------------------
-
-
 def test_rank_plans_orders_descending() -> None:
     plans = [
         _make_plan(["c1"], reached_skills=set(), final_score=0.3),
@@ -277,7 +250,6 @@ def test_rank_plans_integration_with_dataset() -> None:
     ranked = rank_plans(plans)
 
     assert len(ranked) >= 1
-    # Scores no decrecientes en orden descendente
     for i in range(len(ranked) - 1):
         s1 = ranked[i].final_score or -999
         s2 = ranked[i + 1].final_score or -999

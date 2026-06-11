@@ -117,7 +117,6 @@ def _build_profile(
     context: str,
     profile_id: str,
 ) -> StudentProfile:
-    """Construye y valida un StudentProfile a partir de un diccionario de datos."""
     _ensure_positive_int(data.get("max_weeks"), "max_weeks", context)
     _ensure_positive_int(data.get("max_weekly_hours"), "max_weekly_hours", context)
     _ensure_between_zero_and_one(data.get("risk_tolerance"), "risk_tolerance", context)
@@ -139,10 +138,6 @@ def profile_from_instance(
     instance: dict[str, Any],
     skills: dict[str, Skill] | None = None,
 ) -> StudentProfile:
-    """Construye el StudentProfile embebido en el bloque 'student' de una instancia.
-
-    Con `skills` valida que las skills iniciales existan; sin `skills` asume que la
-    instancia ya fue validada al cargar (camino rapido para el runner)."""
     instance_id = instance.get("id")
     student = instance.get("student")
     if not isinstance(student, dict):
@@ -165,10 +160,6 @@ def load_instances(
     skills: dict[str, Skill] | None = None,
     roles: dict[str, Role] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, StudentProfile]]:
-    """Carga las instancias y deriva los perfiles desde el bloque 'student' embebido.
-
-    Devuelve (instancias, perfiles) donde perfiles esta indexado por la etiqueta
-    legible del estudiante (campo 'label', o el id de la instancia si falta)."""
     if not Path(path).exists():
         return [], {}
     raw_instances = _read_json(path)

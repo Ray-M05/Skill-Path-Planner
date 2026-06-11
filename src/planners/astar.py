@@ -4,7 +4,6 @@ import heapq
 import itertools
 import math
 import time
-
 from ..models import Course, PlanResult, SearchState, StudentProfile
 from .common import (
     apply_course,
@@ -18,8 +17,7 @@ from .common import (
     violates_profile_limits,
 )
 
-
-_REC_BONUS = 0.5  # reducción de costo por cada skill recomendada cubierta
+_REC_BONUS = 0.5  # costo por cada skill recomendada cubierta
 
 
 def g_cost(state: SearchState, recommended_skills: frozenset[str] | None = None) -> float:
@@ -41,11 +39,6 @@ def h_cost(
     producers: dict[str, Course] | None = None,
     needed_closure: set[str] | None = None,
 ) -> float:
-    """Heuristica admisible consciente de prerequisitos.
-    Suma el costo (course_h_cost) de los cursos productores de cada skill aun pendiente del
-    cierre de prerequisitos de los objetivos. Como cada skill pendiente exige tomar su
-    curso productor, la suma es cota inferior del costo restante => admisible y A* sigue optimo.
-    """
     missing = target_skills - set(state.skills)
     if not missing:
         return 0.0
@@ -105,7 +98,7 @@ def astar_k_plans(
     max_nodes: int = 0,
     recommended_skills: frozenset[str] | None = None,
 ) -> list[PlanResult]:
-    """Genera hasta k planes con A*. max_nodes=0 significa sin limite de expansion."""
+    """Genera hasta k planes con A*."""
     rec = recommended_skills or frozenset()
     start_time = time.perf_counter()
     producers = build_skill_producers(courses)

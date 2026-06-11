@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from .models import PlanResult, Role, StudentProfile
 
 
@@ -24,8 +23,6 @@ def normalize_value(value: float, max_value: float) -> float:
 
 
 def time_pressure_penalty(total_weeks: int, max_weeks: int, threshold: float = 0.70) -> float:
-    """Penaliza solo cuando el plan consume más del `threshold` del presupuesto.
-    """
     if max_weeks <= 0:
         return 0.0
     usage = total_weeks / max_weeks
@@ -40,10 +37,9 @@ def compute_score_with_breakdown(
     role: Role,
     profile: StudentProfile,
 ) -> tuple[float, dict[str, Any]]:
-    """Devuelve (score, breakdown) donde breakdown muestra la contribución de cada señal.
-
+    """
     Pesos base con todas las señales activas:
-      +0.20 required_coverage — siempre 1.0 para planes válidos; base garantizada
+      +0.20 required_coverage — siempre 1.0 para planes válidos, base garantizada
       +0.15 rec_coverage      — discrimina entre planes alternativos
       +0.25 MC success_probability
       +0.20 LLM global_quality

@@ -6,7 +6,6 @@ import pathlib
 import re
 from dataclasses import asdict
 from typing import Any
-
 from .config import Settings, load_settings
 from .dataset.loader import load_dataset
 from .dataset.resolver import normalize_text
@@ -91,7 +90,6 @@ def _skill_is_mentioned(user_text: str, skill_name_or_alias: str) -> bool:
     return bool(normalized_skill and normalized_skill in normalized_text)
 
 
-# Palabras vacias para emparejar el objetivo con el nombre de un rol del catalogo.
 _GOAL_STOPWORDS = {
     "quiero", "ser", "un", "una", "de", "del", "la", "el", "los", "las", "y", "en",
     "para", "como", "me", "gustaria", "mi", "meta", "es", "convertirme", "trabajar",
@@ -122,8 +120,6 @@ def _match_role_id(user_text: str, dataset: Dataset) -> tuple[str | None, float]
 
 
 def _slug_from_query(user_text: str) -> str:
-    """Construye un slug a partir de las palabras significativas de la consulta,
-    para nombrar el rol a medida cuando no se reconoce ninguno (p. ej. 'astronauta')."""
     tokens = [tok for tok in normalize_text(user_text).split() if tok not in _GOAL_STOPWORDS]
     return "_".join(tokens)
 
@@ -148,7 +144,7 @@ def build_mock_goal_response(user_text: str, dataset: Dataset) -> dict[str, Any]
 
     role_id, score = _match_role_id(user_text, dataset)
     if role_id is None:
-        # Ningun rol reconocible: rol a medida sin objetivo -> no planificable.
+        # Ningun rol reconocible -> no planificable.
         slug = _slug_from_query(user_text) or "desconocido"
         return {
             **base,
@@ -184,7 +180,6 @@ def run_planner(
     dataset: Dataset,
     profile: StudentProfile,
 ) -> PlanResult:
-    """Alias público para compatibilidad con tests existentes."""
     return run_planner_single(planner_name, goal, dataset, profile)
 
 
@@ -327,7 +322,6 @@ def run_cli(args: argparse.Namespace) -> int:
 
     validation_profile = build_profile_from_goal(goal)
 
-    # --- Modo validación manual de trayectoria ---
     course_ids = _parse_course_ids(args.courses)
     if course_ids:
         valid, errors = validate_plan(
@@ -358,7 +352,6 @@ def run_cli(args: argparse.Namespace) -> int:
         print(_section("VALIDACION FORMAL DE LA TRAYECTORIA", _pretty_json(validation_result)))
         return 0
 
-    # --- Modo planificador automático ---
     k = args.k
     plans = run_planner_k(args.planner, k, goal, dataset, validation_profile, max_nodes=DEFAULT_MAX_NODES)
 
@@ -423,7 +416,7 @@ def run_cli(args: argparse.Namespace) -> int:
         ]
         print(_section(f"RANKING DE {len(ranked)} PLANES", _pretty_json(ranking_summary)))
 
-    # --- Métricas CSV ---
+    # Métricas CSV 
     if args.metrics or args.metrics_output:
         rows = [
             extract_metrics_row(p, instance_id="cli", target_skill_ids=goal.target_skill_ids)

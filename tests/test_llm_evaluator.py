@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from src.dataset.loader import load_dataset
 from src.llm.evaluator import (
     build_mock_evaluation_response,
@@ -71,11 +70,6 @@ def _make_plan(
         runtime_seconds=0.01,
         valid=valid,
     )
-
-
-# ---------------------------------------------------------------------------
-# validate_llm_evaluation
-# ---------------------------------------------------------------------------
 
 
 def test_validate_llm_evaluation_accepts_valid_input() -> None:
@@ -158,11 +152,6 @@ def test_validate_llm_evaluation_rejects_non_list_strengths() -> None:
         validate_llm_evaluation(raw)
 
 
-# ---------------------------------------------------------------------------
-# build_mock_evaluation_response
-# ---------------------------------------------------------------------------
-
-
 def test_build_mock_evaluation_returns_expected_keys() -> None:
     dataset = load_dataset("data")
     profile = dataset.profiles["profile_beginner"]
@@ -230,11 +219,6 @@ def test_build_mock_evaluation_empty_plan_has_low_goal_alignment() -> None:
     result = build_mock_evaluation_response(plan, role, profile, dataset)
 
     assert result["goal_alignment"] == 0.0
-
-
-# ---------------------------------------------------------------------------
-# evaluate_plan_with_llm
-# ---------------------------------------------------------------------------
 
 
 def test_evaluate_plan_with_llm_mock_returns_expected_keys() -> None:

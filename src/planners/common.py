@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import time
-
 from ..models import Course, PlanResult, SearchState, StudentProfile
 from ..validators import validate_plan
 
 
 def course_h_cost(course: Course) -> float:
-    # Componente del costo de un curso para la heuristica (semanas + dificultad).
+    # Componente del costo de un curso para la heuristica (semanas + dificultad)
     return course.duration_weeks + 2.0 * course.difficulty
 
 
@@ -63,7 +62,6 @@ def apply_course(course: Course, state: SearchState) -> SearchState:
         weeks_used=state.weeks_used + course.duration_weeks,
         difficulty_sum=state.difficulty_sum + course.difficulty,
     )
-
 
 def violates_profile_limits(course: Course, state: SearchState, profile: StudentProfile) -> bool:
     if course.weekly_hours > profile.max_weekly_hours:
